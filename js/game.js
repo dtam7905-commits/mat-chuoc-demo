@@ -57,3 +57,40 @@ function spin() {
 spinBtn.addEventListener("click", spin);
 
 createBoard();
+/* ================= ADMIN PANEL ================= */
+
+let money = 500000;
+let bet = 10000;
+let spinSpeed = 300;
+
+const title = document.getElementById("title");
+const adminPanel = document.getElementById("adminPanel");
+const adminMoney = document.getElementById("adminMoney");
+const adminBet = document.getElementById("adminBet");
+const adminSpeed = document.getElementById("adminSpeed");
+const saveAdmin = document.getElementById("saveAdmin");
+
+const ADMIN_PIN = "1234";
+let clickCount = 0;
+
+// Click 5 lần mở admin
+title.addEventListener("click", () => {
+  clickCount++;
+  if (clickCount >= 5) {
+    const pin = prompt("Nhập PIN Admin:");
+    if (pin === ADMIN_PIN) {
+      adminPanel.style.display = "block";
+    }
+    clickCount = 0;
+  }
+});
+
+// Lưu admin
+saveAdmin.addEventListener("click", () => {
+  money = Number(adminMoney.value);
+  bet = Number(adminBet.value);
+  spinSpeed = Number(adminSpeed.value);
+
+  alert("Đã lưu admin!");
+  adminPanel.style.display = "none";
+});
