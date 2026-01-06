@@ -50,7 +50,7 @@ function spin() {
       if (col === COLS - 1) {
         spinBtn.disabled = false;
       }
-    }, col * 300);
+    }, col * spinspeed);
   }
 }
 
