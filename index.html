@@ -2,204 +2,170 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Mạt Chược Slot VN</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mạt Chược VN</title>
 <style>
-body{margin:0;background:#0f5c3a;color:#fff;font-family:Arial;text-align:center}
-h1{margin:10px}
-#top{display:flex;justify-content:space-around;font-size:18px}
-#board{width:360px;margin:10px auto;background:#000;padding:10px;border-radius:15px}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.cell{background:#fff;border-radius:8px;height:55px;display:flex;align-items:center;justify-content:center}
-.cell img{width:40px}
-.win{box-shadow:0 0 12px 5px gold;animation:shake .3s}
-@keyframes shake{
- 0%{transform:translate(0)}
- 25%{transform:translate(2px)}
- 50%{transform:translate(-2px)}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#145c3a;
+  color:#fff;
+  text-align:center;
 }
-button{padding:10px 22px;font-size:16px;border:none;border-radius:10px;background:gold}
-#msg{margin-top:10px;font-size:18px}
-#fs{margin-top:5px;color:#ffd700}
-#admin{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none}
+.board{
+  width:320px;
+  margin:20px auto;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  padding:10px;
+  background:#000;
+  border-radius:12px;
+}
+.cell{
+  width:56px;
+  height:56px;
+  background:#fff;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.cell img{
+  width:48px;
+  height:48px;
+}
+.win{
+  box-shadow:0 0 12px 4px gold;
+}
+button{
+  padding:12px 40px;
+  border:none;
+  border-radius:10px;
+  background:gold;
+  font-size:18px;
+}
+#admin{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:#000c;
+  color:#fff;
+}
 </style>
 </head>
-
 <body>
-<h1>🀄 MẠT CHƯỢC VN – 1024 WAYS</h1>
 
-<div id="top">
- <div>💰 <span id="money"></span></div>
- <div>🎯 <span id="bet"></span></div>
-</div>
+<h2>🀄 MẠT CHƯỢC VN</h2>
+<div>💰 Tiền: <span id="money">500000</span> | 🎯 Cược: <span id="bet">10000</span></div>
 
-<div id="board"><div class="grid" id="grid"></div></div>
+<div class="board" id="board"></div>
 
-<button onclick="betDown()">-</button>
 <button onclick="spin()">QUAY</button>
-<button onclick="betUp()">+</button>
+<div id="result"></div>
 
-<div id="fs"></div>
-<div id="msg"></div>
-
-<!-- ADMIN -->
 <div id="admin">
- <h2>ADMIN</h2>
- <input id="pin" placeholder="PIN">
- <button onclick="login()">OK</button><br><br>
- <button onclick="money+=100000;save()">+TIỀN</button>
- <button onclick="money-=100000;save()">-TIỀN</button>
- <button onclick="forceWin=true">FORCE WIN</button>
- <button onclick="forceScatter=true">FORCE SCATTER</button><br><br>
- <button onclick="admin.style.display='none'">ĐÓNG</button>
+  <h3>ADMIN</h3>
+  <input id="pin" placeholder="PIN"><br><br>
+  <button onclick="login()">OK</button><br><br>
+  <button onclick="money+=100000;update()">+100K</button>
+  <button onclick="money-=100000;update()">-100K</button>
+  <br><br>
+  <button onclick="admin.style.display='none'">ĐÓNG</button>
 </div>
+
+<audio id="spinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-slot-machine-spin-1930.mp3"></audio>
 
 <script>
-/* ===== IMAGE BASE64 ===== */
-const img=c=>`data:image/svg+xml;base64,${btoa(
-`<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'>
-<rect width='100%' height='100%' rx='10' fill='${c}'/>
-</svg>`)}`
-const IMAGES={
- man:img('#d32'),pin:img('#39f'),sou:img('#3c3'),
- trung:img('#f33'),phat:img('#0c6'),bach:img('#999'),
- wild:img('#fc0'),scatter:img('#f0f')
-}
-
-/* ===== STATE ===== */
-let money=+localStorage.money||500000
-let bet=+localStorage.bet||2000
-let freeSpin=0
-let forceWin=false,forceScatter=false
-
-const rows=5,cols=5
-const grid=document.getElementById("grid")
-
 const symbols=[
- {k:'man',w:2},{k:'pin',w:2},{k:'sou',w:2},
- {k:'trung',w:3},{k:'phat',w:3},{k:'bach',w:3},
- {k:'wild',w:5},{k:'scatter',s:true}
-]
+ {n:'man',img:'images/man.png'},
+ {n:'pin',img:'images/pin.png'},
+ {n:'sou',img:'images/sou.png'},
+ {n:'trung',img:'images/trung.png',wild:true},
+ {n:'phat',img:'images/phat.png',scatter:true},
+ {n:'bach',img:'images/bach.png'}
+];
 
-/* ===== INIT ===== */
-for(let i=0;i<25;i++){
- let d=document.createElement('div')
- d.className='cell'
- grid.appendChild(d)
-}
-update()
+let grid=[];
+let money=500000;
+let bet=10000;
+let keys=[];
 
-/* ===== AUDIO (WEB) ===== */
-const ctx=new (window.AudioContext||webkitAudioContext)()
-const beep=f=>{
- let o=ctx.createOscillator()
- let g=ctx.createGain()
- o.frequency.value=f
- o.connect(g);g.connect(ctx.destination)
- o.start();g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.2)
-}
+const board=document.getElementById('board');
+const moneyEl=document.getElementById('money');
+const result=document.getElementById('result');
 
-/* ===== SPIN ===== */
-async function spin(){
- if(freeSpin===0 && money<bet)return
- clear()
-
- if(freeSpin>0) freeSpin--
- else money-=bet
-
- update(); beep(300)
-
- let board=[...Array(rows)].map(()=>[])
- let scat=0
-
- for(let c=0;c<cols;c++){
-  for(let r=0;r<rows;r++){
-   await sleep(freeSpin?50:100)
-   let s=rand()
-   if(forceScatter) s={k:'scatter'}
-   set(r,c,s); board[r][c]=s
-   if(s.k==='scatter')scat++
-  }
- }
-
- forceScatter=false
-
- if(scat>=3){
-  freeSpin+=scat===3?8:scat===4?12:20
-  beep(120); update()
- }
-
- const res=calcWays(board)
- if(res.win>0){
-  money+=res.win*(freeSpin?2:1)
-  beep(600)
-  res.cells.forEach(i=>grid.children[i].classList.add('win'))
-  msg.innerText='🎉 THẮNG '+res.win
- }else msg.innerText='❌ CHƯA TRÚNG'
-
- save();update()
-}
-
-/* ===== 1024 WAYS ===== */
-function calcWays(b){
- let win=0,cells=new Set()
- symbols.filter(s=>!s.s).forEach(sym=>{
-  let m=[]
-  for(let c=0;c<cols;c++){
-   let col=[]
-   for(let r=0;r<rows;r++)
-    if(b[r][c].k===sym.k||b[r][c].k==='wild') col.push({r,c})
-   if(!col.length)break
-   m.push(col)
-  }
-  if(m.length>=3){
-   let ways=m.reduce((a,b)=>a*b.length,1)
-   win+=ways*bet*sym.w
-   m.forEach(col=>col.forEach(p=>cells.add(p.r*cols+p.c)))
-  }
- })
- return{win,cells}
-}
-
-/* ===== UTIL ===== */
-function rand(){
- if(forceWin) return symbols.find(s=>s.k==='wild')
- return symbols[Math.floor(Math.random()*symbols.length)]
-}
-function set(r,c,s){
- grid.children[r*cols+c].innerHTML=`<img src="${IMAGES[s.k]}">`
-}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function update(){
- moneyEl.innerText=money
- betEl.innerText=bet
- fs.innerText=freeSpin?`FREE SPIN: ${freeSpin}`:''
+  moneyEl.innerText=money;
 }
-function save(){
- localStorage.money=money
- localStorage.bet=bet
-}
-function clear(){
- document.querySelectorAll('.cell').forEach(c=>c.classList.remove('win'))
-}
-function betUp(){if(bet<500000)bet+=2000;save();update()}
-function betDown(){if(bet>2000)bet-=2000;save();update()}
 
-/* ===== ADMIN ===== */
+function draw(){
+  board.innerHTML='';
+  grid.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='cell';
+    const i=document.createElement('img');
+    i.src=c.img;
+    d.appendChild(i);
+    board.appendChild(d);
+  });
+}
+
+function spin(){
+  if(money<bet) return alert('Hết tiền');
+  money-=bet;
+  update();
+  result.innerText='';
+  document.getElementById('spinSound').play();
+  grid=[];
+  let col=0;
+  function drop(){
+    for(let r=0;r<5;r++){
+      const s=symbols[Math.floor(Math.random()*symbols.length)];
+      grid[col+r*5]=s;
+    }
+    draw();
+    col++;
+    if(col<5) setTimeout(drop,200);
+    else setTimeout(checkWin,300);
+  }
+  drop();
+}
+
+function checkWin(){
+  let win=0;
+  let scatter=0;
+  document.querySelectorAll('.cell').forEach(c=>c.classList.remove('win'));
+  for(let r=0;r<5;r++){
+    const row=[];
+    for(let c=0;c<5;c++) row.push(grid[c+r*5]);
+    if(row.every(x=>x.n===row[0].n||x.wild)){
+      win+=bet*(r+1);
+      for(let c=0;c<5;c++)
+        board.children[c+r*5].classList.add('win');
+    }
+    row.forEach(x=>x.scatter&&scatter++);
+  }
+  if(scatter>=3){
+    result.innerText='⭐ SCATTER – SANG GAME PHỤ ⭐';
+  }
+  if(win>0){
+    money+=win;
+    result.innerText='🎉 THẮNG '+win;
+  }
+  update();
+}
+
 document.addEventListener('keydown',e=>{
- if(e.key==='a')admin.style.display='block'
-})
-function login(){
- if(pin.value==='9999')alert('ADMIN OK')
- else alert('SAI PIN')
-}
+  keys.push(e.key);
+  if(keys.slice(-3).join('')==='aaa')
+    admin.style.display='block';
+});
 
-/* ===== DOM ===== */
-const moneyEl=document.getElementById('money')
-const betEl=document.getElementById('bet')
-const msg=document.getElementById('msg')
-const fs=document.getElementById('fs')
-const admin=document.getElementById('admin')
+function login(){
+  if(pin.value==='9999') alert('ADMIN OK');
+  else alert('SAI PIN');
+}
+draw();
 </script>
 </body>
 </html>
