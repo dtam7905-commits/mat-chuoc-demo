@@ -2,10 +2,8 @@ const board = document.getElementById("board");
 const ROWS = 5;
 const COLS = 5;
 
-// Danh sách quân demo
 const symbols = ["萬", "筒", "索", "中", "發", "白"];
 
-// Tạo bàn 5x5
 function createBoard() {
   board.innerHTML = "";
   for (let i = 0; i < ROWS * COLS; i++) {
@@ -16,12 +14,10 @@ function createBoard() {
   }
 }
 
-// Random quân
 function randomSymbol() {
   return symbols[Math.floor(Math.random() * symbols.length)];
 }
 
-// QUAY – quay từng cột
 function spin() {
   const tiles = document.querySelectorAll(".tile");
   let col = 0;
@@ -29,6 +25,7 @@ function spin() {
   const interval = setInterval(() => {
     if (col >= COLS) {
       clearInterval(interval);
+      checkWin();
       return;
     }
 
@@ -36,10 +33,33 @@ function spin() {
       const index = row * COLS + col;
       tiles[index].textContent = randomSymbol();
     }
-
     col++;
   }, 150);
 }
 
-// Load lần đầu
+// KIỂM TRA THẮNG
+function checkWin() {
+  const tiles = document.querySelectorAll(".tile");
+  let win = false;
+
+  for (let row = 0; row < ROWS; row++) {
+    const base = row * COLS;
+    const a = tiles[base].textContent;
+    const b = tiles[base + 1].textContent;
+    const c = tiles[base + 2].textContent;
+
+    if (a === b && b === c) {
+      win = true;
+      for (let i = 0; i < COLS; i++) {
+        tiles[base + i].style.background = "#ffd54f";
+      }
+    }
+  }
+
+  const winText = document.querySelector(".win-text");
+  winText.textContent = win
+    ? "🎉 ĐẠI THẮNG MẠT CHƯỢC 🎉"
+    : "Chúc bạn may mắn lần sau!";
+}
+
 createBoard();
