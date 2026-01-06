@@ -1,155 +1,176 @@
-/* =====================
-   CONFIG
-===================== */
+// ================== CẤU HÌNH ==================
 const ROWS = 5;
 const COLS = 5;
+
 const BET = 10000;
-
-const SYMBOLS = ["man", "pin", "sou", "trung", "phat", "bach"];
-const SCATTER = "scatter";
-const WILD = "wild";
-
 let money = 500000;
-let spinning = false;
 
-/* =====================
-   DOM
-===================== */
+const SYMBOLS = [
+  { name: "man", pay: 2 },
+  { name: "pin", pay: 2 },
+  { name: "sou", pay: 2 },
+  { name: "trung", pay: 3 },
+  { name: "phat", pay: 3 },
+  { name: "bach", pay: 3 },
+  { name: "wild", pay: 5, wild: true },
+  { name: "scatter", scatter: true }
+];
+
+// ================== DOM ==================
 const board = document.getElementById("board");
-const btnSpin = document.getElementById("spin");
+const spinBtn = document.getElementById("spin");
 const moneyEl = document.getElementById("money");
-const statusEl = document.getElementById("status");
+const resultEl = document.getElementById("result");
 
-/* =====================
-   INIT
-===================== */
-moneyEl.innerText = money.toLocaleString();
-createBoard();
+// ================== TẠO BÀN ==================
+let grid = [];
 
-/* =====================
-   CREATE BOARD
-===================== */
 function createBoard() {
   board.innerHTML = "";
+  grid = [];
+
   for (let r = 0; r < ROWS; r++) {
+    grid[r] = [];
     for (let c = 0; c < COLS; c++) {
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.innerHTML = `<img src="images/man.png">`;
-      board.appendChild(tile);
+      const cell = document.createElement("div");
+      cell.className = "tile";
+      board.appendChild(cell);
+      grid[r][c] = cell;
     }
   }
 }
 
-/* =====================
-   RANDOM SYMBOL
-===================== */
+createBoard();
+updateMoney();
+
+// ================== TIỆN ÍCH ==================
 function randomSymbol() {
-  const rand = Math.random();
-  if (rand < 0.05) return SCATTER; // 5%
-  if (rand < 0.10) return WILD;    // 5%
   return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
 }
 
-/* =====================
-   SPIN
-===================== */
-btnSpin.onclick = async () => {
-  if (spinning) return;
-  if (money < BET) {
-    statusEl.innerText = "❌ Không đủ tiền";
-    return;
-  }
-
-  spinning = true;
-  statusEl.innerText = "🎲 Đang quay...";
-  money -= BET;
+function updateMoney() {
   moneyEl.innerText = money.toLocaleString();
-
-  const tiles = document.querySelectorAll(".tile");
-  const result = [];
-
-  for (let c = 0; c < COLS; c++) {
-    for (let r = 0; r < ROWS; r++) {
-      const index = r * COLS + c;
-      const symbol = randomSymbol();
-      result[index] = symbol;
-
-      tiles[index].classList.remove("win");
-      tiles[index].innerHTML = `
-        <img src="images/${symbol}.png">
-      `;
-    }
-    await sleep(200); // quay từng cột
-  }
-
-  checkWin(result);
-  spinning = false;
-};
-
-/* =====================
-   CHECK WIN
-===================== */
-function checkWin(result) {
-  let win = 0;
-  let scatterCount = 0;
-
-  result.forEach(s => {
-    if (s === SCATTER) scatterCount++;
-  });
-
-  if (scatterCount >= 3) {
-    win += BET * scatterCount;
-  }
-
-  for (let r = 0; r < ROWS; r++) {
-    let base = null;
-    let count = 0;
-    let indexes = [];
-
-    for (let c = 0; c < COLS; c++) {
-      const i = r * COLS + c;
-      const s = result[i];
-
-      if (s === WILD && base) {
-        count++;
-        indexes.push(i);
-        continue;
-      }
-
-      if (!base && s !== SCATTER) {
-        base = s;
-        count = 1;
-        indexes = [i];
-        continue;
-      }
-
-      if (s === base || s === WILD) {
-        count++;
-        indexes.push(i);
-      } else break;
-    }
-
-    if (count >= 3) {
-      win += BET * count;
-      indexes.forEach(i =>
-        document.querySelectorAll(".tile")[i].classList.add("win")
-      );
-    }
-  }
-
-  if (win > 0) {
-    money += win;
-    moneyEl.innerText = money.toLocaleString();
-    statusEl.innerText = `🎉 THẮNG ${win.toLocaleString()} 🎉`;
-  } else {
-    statusEl.innerText = "❌ Chưa trúng";
-  }
 }
 
-/* =====================
-   UTILS
-===================== */
 function sleep(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
+
+// ================== QUAY ==================
+async function spin() {
+  if (money < BET) {
+    alert("Không đủ tiền!");
+    return;
+  }
+
+  money -= BET;
+  updateMoney();
+  resultEl.innerText = "Đang quay...";
+  spinBtn.disabled = true;
+
+  clearHighlight();
+
+  let result = [];
+
+  // Quay từng cột
+  for (let c = 0; c < COLS; c++) {
+    for (let i = 0; i < 10; i++) {
+      for (let r = 0; r < ROWS; r++) {
+        const sym = randomSymbol();
+        grid[r][c].innerHTML =
+          `<img src="images/${sym.name}.png">`;
+      }
+      await sleep(50);
+    }
+
+    for (let r = 0; r < ROWS; r++) {
+      const sym = randomSymbol();
+      grid[r][c].dataset.symbol = sym.name;
+      grid[r][c].innerHTML =
+        `<img src="images/${sym.name}.png">`;
+
+      if (!result[r]) result[r] = [];
+      result[r][c] = sym;
+    }
+  }
+
+  const win = checkWin(result);
+  if (win > 0) {
+    money += win;
+    resultEl.innerText = `🎉 THẮNG ${win.toLocaleString()} 🎉`;
+  } else {
+    resultEl.innerText = "❌ Chưa trúng ❌";
+  }
+
+  updateMoney();
+  spinBtn.disabled = false;
+}
+
+// ================== KIỂM TRA THẮNG ==================
+function checkWin(result) {
+  let totalWin = 0;
+
+  // kiểm tra từng hàng
+  for (let r = 0; r < ROWS; r++) {
+    let base = null;
+    let count = 0;
+    let wildCount = 0;
+
+    for (let c = 0; c < COLS; c++) {
+      const s = result[r][c];
+
+      if (s.scatter) continue;
+
+      if (!base && !s.wild) base = s;
+      if (s.wild) wildCount++;
+
+      if (base && (s.name === base.name || s.wild)) {
+        count++;
+      } else break;
+    }
+
+    if (count >= 3 && base) {
+      const win = BET * base.pay * count;
+      totalWin += win;
+      highlightRow(r);
+    }
+  }
+
+  // Scatter
+  let scatterCount = 0;
+  result.flat().forEach(s => {
+    if (s.scatter) scatterCount++;
+  });
+
+  if (scatterCount >= 3) {
+    const scatterWin = BET * scatterCount;
+    totalWin += scatterWin;
+    highlightScatter();
+  }
+
+  return totalWin;
+}
+
+// ================== HIỆU ỨNG ==================
+function highlightRow(row) {
+  for (let c = 0; c < COLS; c++) {
+    grid[row][c].classList.add("win");
+  }
+}
+
+function highlightScatter() {
+  grid.flat().forEach(cell => {
+    if (cell.dataset.symbol === "scatter") {
+      cell.classList.add("scatter");
+    }
+  });
+}
+
+function clearHighlight() {
+  grid.flat().forEach(cell => {
+    cell.classList.remove("win", "scatter");
+  });
+}
+
+// ================== EVENT ==================
+spinBtn.addEventListener("click", spin);
