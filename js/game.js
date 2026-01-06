@@ -1,96 +1,73 @@
 const board = document.getElementById("board");
-const spinBtn = document.getElementById("spinBtn");
+const moneyEl = document.getElementById("money");
+const resultEl = document.getElementById("result");
 
-const ROWS = 5;
-const COLS = 5;
+let money = 500000;
+const bet = 10000;
+const rows = 5;
+const cols = 5;
+let spinning = false;
 
-// Danh sách quân + ảnh
 const symbols = [
-  { name: "man", img: "img/man.png" },
-  { name: "sach", img: "img/sach.png" },
-  { name: "van", img: "img/van.png" },
-  { name: "trung", img: "img/trung.png" },
-  { name: "phat", img: "img/phat.png" },
-  { name: "bach", img: "img/bach.png" }
+  "man", "pin", "sou",
+  "trung", "phat", "bach"
 ];
 
-let cells = [];
-
-// Tạo bàn
 function createBoard() {
   board.innerHTML = "";
-  cells = [];
-
-  for (let i = 0; i < ROWS * COLS; i++) {
-    const div = document.createElement("div");
-    div.className = "cell";
-    div.innerHTML = `<img src="img/man.png">`;
-    board.appendChild(div);
-    cells.push(div);
+  for (let i = 0; i < rows * cols; i++) {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.innerHTML = `<img src="images/bach.png">`;
+    board.appendChild(tile);
   }
 }
 
-// Random quân
 function randomSymbol() {
   return symbols[Math.floor(Math.random() * symbols.length)];
 }
 
-// Quay từng cột
 function spin() {
-  spinBtn.disabled = true;
+  if (spinning) return;
+  if (money < bet) {
+    alert("Không đủ tiền!");
+    return;
+  }
 
-  for (let col = 0; col < COLS; col++) {
-    setTimeout(() => {
-      for (let row = 0; row < ROWS; row++) {
-        const index = row * COLS + col;
-        const s = randomSymbol();
-        cells[index].innerHTML = `<img src="${s.img}">`;
-      }
+  spinning = true;
+  money -= bet;
+  moneyEl.textContent = money;
+  resultEl.textContent = "Đang quay...";
 
-      if (col === COLS - 1) {
-        spinBtn.disabled = false;
-      }
-    }, col * spinspeed);
+  const tiles = document.querySelectorAll(".tile");
+  let col = 0;
+
+  const interval = setInterval(() => {
+    for (let r = 0; r < rows; r++) {
+      const index = r * cols + col;
+      const sym = randomSymbol();
+      tiles[index].innerHTML = `<img src="images/${sym}.png">`;
+    }
+    col++;
+    if (col >= cols) {
+      clearInterval(interval);
+      spinning = false;
+      checkWin();
+    }
+  }, 250);
+}
+
+function checkWin() {
+  // ví dụ đơn giản: random thắng
+  const win = Math.random() < 0.35;
+  if (win) {
+    const winAmount = bet * 10;
+    money += winAmount;
+    moneyEl.textContent = money;
+    resultEl.textContent = `🎉 THẮNG ${winAmount.toLocaleString()} 🎉`;
+  } else {
+    resultEl.textContent = "❌ Chưa trúng ❌";
   }
 }
 
-spinBtn.addEventListener("click", spin);
-
 createBoard();
-/* ================= ADMIN PANEL ================= */
-
-let money = 500000;
-let bet = 10000;
-let spinSpeed = 300;
-
-const title = document.getElementById("title");
-const adminPanel = document.getElementById("adminPanel");
-const adminMoney = document.getElementById("adminMoney");
-const adminBet = document.getElementById("adminBet");
-const adminSpeed = document.getElementById("adminSpeed");
-const saveAdmin = document.getElementById("saveAdmin");
-
-const ADMIN_PIN = "1234";
-let clickCount = 0;
-
-// Click 5 lần mở admin
-title.addEventListener("click", () => {
-  clickCount++;
-  if (clickCount >= 5) {
-    const pin = prompt("Nhập PIN Admin:");
-    if (pin === ADMIN_PIN) {
-      adminPanel.style.display = "block";
-    }
-    clickCount = 0;
-  }
-});
-
-// Lưu admin
-saveAdmin.addEventListener("click", () => {
-  money = Number(adminMoney.value);
-  bet = Number(adminBet.value);
-  spinSpeed = Number(adminSpeed.value);
-
-  alert("Đã lưu admin!");
-  adminPanel.style.display = "none";
-});
