@@ -97,3 +97,16 @@ body {
   border-radius: 12px;
   background: linear-gradient(#ffd36a, #e0a000);
 }
+.tile {
+  font-size: 28px;
+  transition: all 0.2s;
+}
+
+.spinning {
+  background: #ffd45a !important;
+}
+
+.win {
+  background: gold !important;
+  box-shadow: 0 0 10px gold;
+}
