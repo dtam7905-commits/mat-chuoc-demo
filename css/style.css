@@ -1,0 +1,64 @@
+/* ===== STYLE MẠT CHƯỢC CƠ BẢN ===== */
+body{
+  margin:0;
+  background:#1b1b1b;
+  color:#fff;
+  font-family:sans-serif;
+}
+
+.board{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  padding:12px;
+}
+
+.cell{
+  aspect-ratio:1/1;
+  background:linear-gradient(#fdfdfd,#e9e9e9);
+  border:2px solid #d2c29d;
+  box-shadow:0 4px 8px rgba(0,0,0,.5);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.cell.W{color:#c62828}
+.cell.S{
+  color:#d4af37;
+  text-shadow:0 0 8px gold;
+}
+
+/* ===== POPUP ĐẠI THẮNG ===== */
+#bigwin{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:999;
+  animation:fadeIn .3s;
+}
+
+#bigwin span{
+  font-size:32px;
+  padding:20px 28px;
+  background:linear-gradient(#ffecb3,#d4af37);
+  color:#7a4a00;
+  border-radius:20px;
+  box-shadow:0 0 30px gold;
+  animation:pulse .8s infinite;
+}
+
+@keyframes pulse{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.08)}
+  100%{transform:scale(1)}
+}
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
