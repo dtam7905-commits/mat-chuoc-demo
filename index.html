@@ -3,169 +3,246 @@
 <head>
 <meta charset="UTF-8">
 <title>Mạt Chược VN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body{
   margin:0;
+  background:#0f5b3b;
   font-family:Arial;
-  background:#145c3a;
   color:#fff;
   text-align:center;
 }
-.board{
+h1{margin:10px 0}
+
+.top{
+  display:flex;
+  justify-content:space-around;
+  font-size:18px;
+}
+
+#board{
   width:320px;
-  margin:20px auto;
+  margin:15px auto;
   display:grid;
   grid-template-columns:repeat(5,1fr);
   gap:6px;
-  padding:10px;
   background:#000;
+  padding:10px;
   border-radius:12px;
 }
+
 .cell{
-  width:56px;
-  height:56px;
   background:#fff;
   border-radius:8px;
+  height:55px;
   display:flex;
   align-items:center;
   justify-content:center;
+  overflow:hidden;
+  box-shadow:0 0 0 rgba(255,215,0,0);
 }
+
+.cell.win{
+  animation: glow 0.6s infinite alternate;
+}
+
+@keyframes glow{
+  from{box-shadow:0 0 5px gold}
+  to{box-shadow:0 0 15px gold}
+}
+
 .cell img{
-  width:48px;
-  height:48px;
+  width:90%;
 }
-.win{
-  box-shadow:0 0 12px 4px gold;
-}
+
 button{
   padding:12px 40px;
+  font-size:20px;
   border:none;
-  border-radius:10px;
-  background:gold;
-  font-size:18px;
+  border-radius:12px;
+  background:linear-gradient(#ffd45a,#f5a700);
+  cursor:pointer;
 }
+
+#msg{
+  margin-top:10px;
+  font-size:20px;
+  color:#ffd45a;
+}
+
 #admin{
   display:none;
   position:fixed;
-  inset:0;
-  background:#000c;
-  color:#fff;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.8);
+}
+#adminBox{
+  background:#222;
+  width:260px;
+  margin:120px auto;
+  padding:20px;
+  border-radius:10px;
+}
+input{
+  width:100%;
+  padding:8px;
+  margin:6px 0;
 }
 </style>
 </head>
+
 <body>
 
-<h2>🀄 MẠT CHƯỢC VN</h2>
-<div>💰 Tiền: <span id="money">500000</span> | 🎯 Cược: <span id="bet">10000</span></div>
-
-<div class="board" id="board"></div>
-
-<button onclick="spin()">QUAY</button>
-<div id="result"></div>
-
-<div id="admin">
-  <h3>ADMIN</h3>
-  <input id="pin" placeholder="PIN"><br><br>
-  <button onclick="login()">OK</button><br><br>
-  <button onclick="money+=100000;update()">+100K</button>
-  <button onclick="money-=100000;update()">-100K</button>
-  <br><br>
-  <button onclick="admin.style.display='none'">ĐÓNG</button>
+<h1>🀄 MẠT CHƯỢC VN</h1>
+<div class="top">
+  <div>💰 Tiền: <span id="money">500000</span></div>
+  <div>🎯 Cược: <span id="bet">10000</span></div>
 </div>
 
-<audio id="spinSound" src="https://assets.mixkit.co/sfx/preview/mixkit-slot-machine-spin-1930.mp3"></audio>
+<div id="board"></div>
+
+<button onclick="spin()">QUAY</button>
+<div id="msg">Chưa quay</div>
+
+<!-- ADMIN -->
+<div id="admin">
+  <div id="adminBox">
+    <h3>ADMIN</h3>
+    <input id="pin" placeholder="PIN">
+    <button onclick="login()">OK</button>
+    <hr>
+    <button onclick="addMoney()">+100K</button>
+    <button onclick="subMoney()">-100K</button>
+    <br><br>
+    <button onclick="closeAdmin()">Đóng</button>
+  </div>
+</div>
 
 <script>
+/* ====== CONFIG ====== */
+const ROWS=5, COLS=5;
 const symbols=[
- {n:'man',img:'images/man.png'},
- {n:'pin',img:'images/pin.png'},
- {n:'sou',img:'images/sou.png'},
- {n:'trung',img:'images/trung.png',wild:true},
- {n:'phat',img:'images/phat.png',scatter:true},
- {n:'bach',img:'images/bach.png'}
+ {k:'man',p:3},
+ {k:'pin',p:3},
+ {k:'sou',p:3},
+ {k:'trung',p:4},
+ {k:'phat',p:4},
+ {k:'bach',p:4},
+ {k:'wild',p:10,wild:true},
+ {k:'scatter',p:0,scatter:true}
 ];
 
-let grid=[];
 let money=500000;
 let bet=10000;
-let keys=[];
+let grid=[];
+let spinning=false;
 
+/* ====== INIT ====== */
 const board=document.getElementById('board');
-const moneyEl=document.getElementById('money');
-const result=document.getElementById('result');
 
-function update(){
-  moneyEl.innerText=money;
-}
-
-function draw(){
+function init(){
   board.innerHTML='';
-  grid.forEach(c=>{
-    const d=document.createElement('div');
-    d.className='cell';
-    const i=document.createElement('img');
-    i.src=c.img;
-    d.appendChild(i);
-    board.appendChild(d);
-  });
-}
-
-function spin(){
-  if(money<bet) return alert('Hết tiền');
-  money-=bet;
-  update();
-  result.innerText='';
-  document.getElementById('spinSound').play();
   grid=[];
-  let col=0;
-  function drop(){
-    for(let r=0;r<5;r++){
-      const s=symbols[Math.floor(Math.random()*symbols.length)];
-      grid[col+r*5]=s;
+  for(let r=0;r<ROWS;r++){
+    grid[r]=[];
+    for(let c=0;c<COLS;c++){
+      const d=document.createElement('div');
+      d.className='cell';
+      d.innerHTML='<img src="images/man.png">';
+      board.appendChild(d);
+      grid[r][c]='man';
     }
-    draw();
-    col++;
-    if(col<5) setTimeout(drop,200);
-    else setTimeout(checkWin,300);
   }
-  drop();
+}
+init();
+
+/* ====== SPIN ====== */
+function spin(){
+  if(spinning) return;
+  if(money<bet){alert('Hết tiền');return;}
+  money-=bet;
+  updateMoney();
+  spinning=true;
+  document.getElementById('msg').innerText='Đang quay...';
+
+  let col=0;
+  const drop=setInterval(()=>{
+    for(let r=0;r<ROWS;r++){
+      const sym=randomSymbol();
+      grid[r][col]=sym.k;
+      cell(r,col).innerHTML=`<img src="images/${sym.k}.png">`;
+      cell(r,col).classList.remove('win');
+    }
+    col++;
+    if(col>=COLS){
+      clearInterval(drop);
+      setTimeout(checkWin,300);
+    }
+  },200);
 }
 
+function randomSymbol(){
+  return symbols[Math.floor(Math.random()*symbols.length)];
+}
+
+function cell(r,c){
+  return board.children[r*COLS+c];
+}
+
+/* ====== WIN ====== */
 function checkWin(){
   let win=0;
-  let scatter=0;
-  document.querySelectorAll('.cell').forEach(c=>c.classList.remove('win'));
-  for(let r=0;r<5;r++){
-    const row=[];
-    for(let c=0;c<5;c++) row.push(grid[c+r*5]);
-    if(row.every(x=>x.n===row[0].n||x.wild)){
-      win+=bet*(r+1);
-      for(let c=0;c<5;c++)
-        board.children[c+r*5].classList.add('win');
+
+  // hàng ngang
+  for(let r=0;r<ROWS;r++){
+    let base=grid[r][0];
+    let ok=true;
+    for(let c=1;c<COLS;c++){
+      if(grid[r][c]!==base && grid[r][c]!=='wild') ok=false;
     }
-    row.forEach(x=>x.scatter&&scatter++);
+    if(ok){
+      win+=bet*3;
+      for(let c=0;c<COLS;c++) cell(r,c).classList.add('win');
+    }
   }
-  if(scatter>=3){
-    result.innerText='⭐ SCATTER – SANG GAME PHỤ ⭐';
+
+  // scatter
+  let sc=0;
+  grid.flat().forEach(s=>{if(s==='scatter')sc++;});
+  if(sc>=3){
+    win+=bet*5;
+    document.getElementById('msg').innerText='🎉 SCATTER!';
   }
-  if(win>0){
-    money+=win;
-    result.innerText='🎉 THẮNG '+win;
-  }
-  update();
+
+  money+=win;
+  updateMoney();
+
+  document.getElementById('msg').innerText=
+    win>0 ? `🎉 THẮNG ${win.toLocaleString()}` : 'Không trúng';
+
+  spinning=false;
 }
 
+/* ====== UI ====== */
+function updateMoney(){
+  document.getElementById('money').innerText=money.toLocaleString();
+}
+
+/* ====== ADMIN ====== */
 document.addEventListener('keydown',e=>{
-  keys.push(e.key);
-  if(keys.slice(-3).join('')==='aaa')
-    admin.style.display='block';
+  if(e.key==='a') document.getElementById('admin').style.display='block';
 });
 
 function login(){
-  if(pin.value==='9999') alert('ADMIN OK');
-  else alert('SAI PIN');
+  if(document.getElementById('pin').value==='9999'){
+    alert('ADMIN OK');
+  }else alert('SAI PIN');
 }
-draw();
+function addMoney(){money+=100000;updateMoney();}
+function subMoney(){money-=100000;updateMoney();}
+function closeAdmin(){document.getElementById('admin').style.display='none';}
 </script>
+
 </body>
 </html>
