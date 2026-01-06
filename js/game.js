@@ -32,3 +32,12 @@ createBoard();
 function spin() {
   createBoard();
 }
+function spin() {
+  const tiles = document.querySelectorAll(".tile");
+
+  tiles.forEach(tile => {
+    const symbols = ["萬", "索", "筒", "中", "發", "白", "🀄", "👑"];
+    const rand = symbols[Math.floor(Math.random() * symbols.length)];
+    tile.textContent = rand;
+  });
+}
