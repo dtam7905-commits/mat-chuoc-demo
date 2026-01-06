@@ -7,7 +7,25 @@
 </head>
 <body>
 
-<h1>🀄 MẠT CHƯỢC VN</h1>
+<h1 id="title">🀄 MẠT CHƯỢC VN</h1>
+
+<div id="adminPanel" style="display:none">
+  <h3>ADMIN</h3>
+
+  <label>Tiền:
+    <input type="number" id="adminMoney" value="500000">
+  </label><br><br>
+
+  <label>Cược:
+    <input type="number" id="adminBet" value="10000">
+  </label><br><br>
+
+  <label>Tốc độ quay (ms):
+    <input type="number" id="adminSpeed" value="300">
+  </label><br><br>
+
+  <button id="saveAdmin">LƯU</button>
+</div>
 
 <div id="board"></div>
 
