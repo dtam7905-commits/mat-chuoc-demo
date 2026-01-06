@@ -1,112 +1,41 @@
-* {
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
-
 body {
-  margin: 0;
-  background: linear-gradient(#222, #111);
-  color: #fff;
+  background: #0f5132;
+  color: white;
+  font-family: sans-serif;
   text-align: center;
 }
 
-/* GAME WRAP */
-.game {
-  max-width: 420px;
-  margin: 20px auto;
-}
-
-/* HEADER */
-.header {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-/* MULTIPLIER */
-.multiplier {
-  display: flex;
-  justify-content: space-between;
-  background: #5a3a10;
-  padding: 8px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-
-.multiplier span {
-  color: gold;
-  font-weight: bold;
-}
-
-/* BOARD — CÁI BÀN BỊ THIẾU */
-.board {
+#board {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-  background: #000;
-  padding: 10px;
+  grid-template-columns: repeat(5, 64px);
+  gap: 8px;
+  justify-content: center;
+  margin: 20px auto;
+  padding: 12px;
+  background: black;
   border-radius: 12px;
-  margin: 10px 0;
 }
 
-/* TILE */
-.tile {
-  background: #f5f5f5;
-  color: #000;
-  font-size: 20px;
-  font-weight: bold;
-  height: 60px;
-  border-radius: 8px;
+.cell {
+  width: 64px;
+  height: 64px;
+  background: white;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* WILD & SCATTER */
-.tile.wild {
-  background: gold;
-  color: #800;
+.cell img {
+  width: 56px;
+  height: 56px;
 }
 
-.tile.scatter {
-  background: orange;
-  color: #000;
-}
-
-/* TEXT */
-.win-text {
-  color: gold;
+button {
+  padding: 12px 30px;
   font-size: 18px;
-  margin: 10px 0;
-}
-
-/* FOOTER */
-.footer {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-/* BUTTON */
-.spin {
-  width: 100%;
-  padding: 15px;
-  font-size: 20px;
-  font-weight: bold;
+  background: gold;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(#ffd36a, #e0a000);
-}
-.tile {
-  font-size: 28px;
-  transition: all 0.2s;
-}
-
-.spinning {
-  background: #ffd45a !important;
-}
-
-.win {
-  background: gold !important;
-  box-shadow: 0 0 10px gold;
+  border-radius: 10px;
+  cursor: pointer;
 }
