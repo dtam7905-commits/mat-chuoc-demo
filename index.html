@@ -6,177 +6,256 @@
 <title>Mạt Chược VN</title>
 
 <style>
-body {
-  margin: 0;
-  background: #0f5a3c;
-  font-family: Arial, sans-serif;
-  color: #fff;
+body{
+  margin:0;
+  background:#0f5f3a;
+  font-family:Arial,Helvetica,sans-serif;
+  color:#fff;
+  text-align:center;
 }
 
-.game {
-  max-width: 420px;
-  margin: auto;
-  padding: 15px;
-  text-align: center;
+h1{
+  margin:15px 0;
 }
 
-.header {
-  font-size: 22px;
-  font-weight: bold;
-  margin-bottom: 10px;
+.info{
+  display:flex;
+  justify-content:space-around;
+  margin-bottom:10px;
+  font-size:18px;
 }
 
-.multipliers {
-  display: flex;
-  justify-content: space-between;
-  background: #6b3f0e;
-  padding: 8px;
-  border-radius: 12px;
-  margin-bottom: 10px;
+#grid{
+  display:grid;
+  grid-template-columns:repeat(5,70px);
+  grid-gap:8px;
+  justify-content:center;
+  background:#000;
+  padding:15px;
+  border-radius:15px;
+  width:max-content;
+  margin:0 auto;
 }
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-  background: #000;
-  padding: 10px;
-  border-radius: 14px;
-  margin-bottom: 10px;
+.tile{
+  width:70px;
+  height:70px;
+  background:#fff;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-.tile {
-  background: #fff;
-  border-radius: 8px;
-  height: 60px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.tile img{
+  width:60px;
+  height:60px;
 }
 
-.tile img {
-  width: 45px;
-  height: 45px;
+.win{
+  box-shadow:0 0 15px gold;
+  animation:flash .5s infinite alternate;
 }
 
-.result {
-  margin: 10px 0;
-  font-weight: bold;
-  color: gold;
+@keyframes flash{
+  from{transform:scale(1)}
+  to{transform:scale(1.15)}
 }
 
-.info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 12px;
+button{
+  margin-top:15px;
+  padding:12px 40px;
+  font-size:20px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(#ffd966,#ffb700);
+  cursor:pointer;
 }
 
-.spin {
-  width: 100%;
-  padding: 16px;
-  font-size: 20px;
-  background: linear-gradient(#ffd45c, #e3a600);
-  border: none;
-  border-radius: 16px;
-  font-weight: bold;
+#msg{
+  margin-top:10px;
+  font-size:18px;
+  color:gold;
+}
+
+#admin{
+  display:none;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#222;
+  padding:20px;
+  border-radius:10px;
+}
+#admin input{
+  width:100px;
 }
 </style>
 </head>
 
 <body>
-<div class="game">
-  <div class="header">🀄 Mạt Chược VN</div>
 
-  <div class="multipliers">
-    <span>x1</span><span>x2</span><span>x3</span><span>x4</span><span>x5</span>
-  </div>
+<h1 id="title">🀄 MẠT CHƯỢC VN</h1>
 
-  <div id="board" class="board"></div>
+<div class="info">
+  <div>💰 Tiền: <span id="money">500000</span></div>
+  <div>🎯 Cược: <span id="bet">10000</span></div>
+</div>
 
-  <div id="result" class="result">Chưa quay</div>
+<div id="grid"></div>
 
-  <div class="info">
-    <div>Tiền: <span id="money">500000</span></div>
-    <div>Cược: <span id="bet">10000</span></div>
-  </div>
+<button onclick="spin()">QUAY</button>
+<div id="msg"></div>
 
-  <button class="spin" onclick="spin()">QUAY</button>
+<!-- ADMIN -->
+<div id="admin">
+  <h3>ADMIN</h3>
+  Tiền <input id="aMoney"><br><br>
+  Cược <input id="aBet"><br><br>
+  Test thắng <input type="checkbox" id="aWin"><br><br>
+  <button onclick="applyAdmin()">OK</button>
 </div>
 
 <script>
-const board = document.getElementById("board");
-const moneyEl = document.getElementById("money");
-const resultEl = document.getElementById("result");
+/* ================= CẤU HÌNH ================= */
+const ROWS=5,COLS=5;
+let money=500000;
+let BET=10000;
+let testWin=false;
 
-let money = 500000;
-const bet = 10000;
-const rows = 5;
-const cols = 5;
-let spinning = false;
-
-const symbols = [
-  "man","pin","sou",
-  "trung","phat","bach"
+/* SYMBOL */
+const symbols=[
+  {name:"man",img:"images/man.png",pay:2},
+  {name:"pin",img:"images/pin.png",pay:2},
+  {name:"sou",img:"images/sou.png",pay:2},
+  {name:"trung",img:"images/trung.png",pay:3},
+  {name:"phat",img:"images/phat.png",pay:3},
+  {name:"bach",img:"images/bach.png",pay:3},
+  {name:"wild",img:"images/wild.png",pay:5,wild:true},
+  {name:"scatter",img:"images/scatter.png",scatter:true}
 ];
 
-function createBoard() {
-  board.innerHTML = "";
-  for (let i = 0; i < rows * cols; i++) {
-    const tile = document.createElement("div");
-    tile.className = "tile";
-    tile.innerHTML = '<img src="images/bach.png">';
-    board.appendChild(tile);
-  }
-}
+/* PAYLINES */
+const PAYLINES=[
+ [0,0,0,0,0],
+ [1,1,1,1,1],
+ [2,2,2,2,2],
+ [3,3,3,3,3],
+ [4,4,4,4,4]
+];
 
-function randomSymbol() {
-  return symbols[Math.floor(Math.random() * symbols.length)];
-}
+const gridEl=document.getElementById("grid");
+let grid=[];
 
-function spin() {
-  if (spinning) return;
-  if (money < bet) {
-    alert("Không đủ tiền!");
-    return;
-  }
-
-  spinning = true;
-  money -= bet;
-  moneyEl.textContent = money;
-  resultEl.textContent = "Đang quay...";
-
-  const tiles = document.querySelectorAll(".tile");
-  let col = 0;
-
-  const interval = setInterval(() => {
-    for (let r = 0; r < rows; r++) {
-      const index = r * cols + col;
-      const sym = randomSymbol();
-      tiles[index].innerHTML = '<img src="images/' + sym + '.png">';
+/* TẠO BÀN */
+function createGrid(){
+  gridEl.innerHTML="";
+  grid=[];
+  for(let r=0;r<ROWS;r++){
+    grid[r]=[];
+    for(let c=0;c<COLS;c++){
+      const d=document.createElement("div");
+      d.className="tile";
+      gridEl.appendChild(d);
+      grid[r][c]=d;
     }
-    col++;
-
-    if (col >= cols) {
-      clearInterval(interval);
-      spinning = false;
-      checkWin();
-    }
-  }, 250);
-}
-
-function checkWin() {
-  const win = Math.random() < 0.35;
-  if (win) {
-    const winAmount = bet * 10;
-    money += winAmount;
-    moneyEl.textContent = money;
-    resultEl.textContent = "🎉 ĐẠI THẮNG MẠT CHƯỢC +" + winAmount.toLocaleString();
-  } else {
-    resultEl.textContent = "❌ CHƯA TRÚNG ❌";
   }
 }
+createGrid();
 
-createBoard();
+/* RANDOM SYMBOL */
+function randSymbol(){
+  return symbols[Math.floor(Math.random()*symbols.length)];
+}
+
+/* SPIN */
+function spin(){
+  if(money<BET) return;
+  money-=BET;
+  updateUI();
+  clearWin();
+
+  let result=[];
+  for(let r=0;r<ROWS;r++){
+    result[r]=[];
+    for(let c=0;c<COLS;c++){
+      const s=testWin && r===2 ? symbols[0] : randSymbol();
+      result[r][c]=s;
+      grid[r][c].innerHTML=`<img src="${s.img}">`;
+    }
+  }
+
+  setTimeout(()=>{
+    let win=checkWin(result);
+    if(win>0){
+      money+=win;
+      msg.innerHTML="🎉 THẮNG "+win.toLocaleString();
+    }else{
+      msg.innerHTML="❌ CHƯA TRÚNG";
+    }
+    updateUI();
+  },500);
+}
+
+/* CHECK WIN */
+function checkWin(res){
+  let total=0;
+
+  PAYLINES.forEach(line=>{
+    let base=null,count=0;
+    for(let c=0;c<COLS;c++){
+      let s=res[line[c]][c];
+      if(!base && !s.scatter) base=s;
+      if(!base) continue;
+      if(s.name===base.name||s.wild){
+        count++;
+        grid[line[c]][c].classList.add("win");
+      }else break;
+    }
+    if(count>=3) total+=BET*base.pay*count;
+  });
+
+  let scat=res.flat().filter(s=>s.scatter).length;
+  if(scat>=3) total+=BET*scat*2;
+
+  return total;
+}
+
+function clearWin(){
+  grid.flat().forEach(t=>t.classList.remove("win"));
+}
+
+function updateUI(){
+  moneyEl.textContent=money.toLocaleString();
+  betEl.textContent=BET.toLocaleString();
+}
+
+const moneyEl=document.getElementById("money");
+const betEl=document.getElementById("bet");
+const msg=document.getElementById("msg");
+
+/* ADMIN */
+let click=0;
+document.getElementById("title").onclick=()=>{
+  click++;
+  if(click>=5){
+    if(prompt("PIN admin")==="1234"){
+      admin.style.display="block";
+      aMoney.value=money;
+      aBet.value=BET;
+    }
+    click=0;
+  }
+}
+function applyAdmin(){
+  money=+aMoney.value;
+  BET=+aBet.value;
+  testWin=aWin.checked;
+  admin.style.display="none";
+  updateUI();
+}
 </script>
+
 </body>
 </html>
