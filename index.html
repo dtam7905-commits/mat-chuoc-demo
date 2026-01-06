@@ -1,35 +1,31 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Mạt Chược VN</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-<h1 id="title">🀄 MẠT CHƯỢC VN</h1>
+<div class="game">
+  <div class="header">🀄 Mạt Chược VN</div>
 
-<div id="adminPanel" style="display:none">
-  <h3>ADMIN</h3>
+  <div class="multipliers">
+    <span>x1</span><span>x2</span><span>x3</span><span>x4</span><span>x5</span>
+  </div>
 
-  <label>Tiền:
-    <input type="number" id="adminMoney" value="500000">
-  </label><br><br>
+  <div id="board" class="board"></div>
 
-  <label>Cược:
-    <input type="number" id="adminBet" value="10000">
-  </label><br><br>
+  <div id="result" class="result">Chưa quay</div>
 
-  <label>Tốc độ quay (ms):
-    <input type="number" id="adminSpeed" value="300">
-  </label><br><br>
+  <div class="info">
+    <div>Tiền: <span id="money">500000</span></div>
+    <div>Cược: <span id="bet">10000</span></div>
+  </div>
 
-  <button id="saveAdmin">LƯU</button>
+  <button class="spin" onclick="spin()">QUAY</button>
 </div>
-
-<div id="board"></div>
-
-<button id="spinBtn">QUAY</button>
 
 <script src="js/game.js"></script>
 </body>
