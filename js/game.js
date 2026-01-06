@@ -1,7 +1,6 @@
 const board = document.getElementById("board");
 const ROWS = 5;
 const COLS = 5;
-
 const symbols = ["萬", "筒", "索", "中", "發", "白"];
 
 function createBoard() {
@@ -30,33 +29,33 @@ function spin() {
     }
 
     for (let row = 0; row < ROWS; row++) {
-      const index = row * COLS + col;
-      tiles[index].textContent = randomSymbol();
+      const i = row * COLS + col;
+      tiles[i].textContent = randomSymbol();
+      tiles[i].style.background = "#fff";
     }
     col++;
   }, 150);
 }
 
-// KIỂM TRA THẮNG
 function checkWin() {
   const tiles = document.querySelectorAll(".tile");
+  const winText = document.querySelector(".win-text");
   let win = false;
 
-  for (let row = 0; row < ROWS; row++) {
-    const base = row * COLS;
-    const a = tiles[base].textContent;
-    const b = tiles[base + 1].textContent;
-    const c = tiles[base + 2].textContent;
+  for (let r = 0; r < ROWS; r++) {
+    const i = r * COLS;
+    const a = tiles[i].textContent;
+    const b = tiles[i + 1].textContent;
+    const c = tiles[i + 2].textContent;
 
     if (a === b && b === c) {
       win = true;
-      for (let i = 0; i < COLS; i++) {
-        tiles[base + i].style.background = "#ffd54f";
+      for (let k = 0; k < COLS; k++) {
+        tiles[i + k].style.background = "#ffd54f";
       }
     }
   }
 
-  const winText = document.querySelector(".win-text");
   winText.textContent = win
     ? "🎉 ĐẠI THẮNG MẠT CHƯỢC 🎉"
     : "Chúc bạn may mắn lần sau!";
