@@ -8,7 +8,14 @@ const rows = 5;
 const cols = 5;
 let spinning = false;
 
-const symbols = [
+const SYMBOLS = [
+  "man",
+  "pin",
+  "sou",
+  "trung",
+  "phat",
+  "bach"
+];
   "man", "pin", "sou",
   "trung", "phat", "bach"
 ];
