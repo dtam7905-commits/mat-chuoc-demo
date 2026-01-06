@@ -1,42 +1,34 @@
-const ROWS = 5;
-const COLS = 5;
-
-const symbols = ["萬", "索", "筒", "中", "發", "白"];
+const board = document.getElementById("board");
+const spinBtn = document.querySelector(".spin");
+const winText = document.querySelector(".win-text");
 
 let money = 500000;
 let bet = 10000;
 let spinning = false;
 
-const board = document.getElementById("board");
-const spinBtn = document.getElementById("spinBtn");
-const moneyEl = document.getElementById("money");
-const resultEl = document.getElementById("result");
+const symbols = ["萬", "索", "筒", "中", "發", "白"];
+const ROWS = 5;
+const COLS = 5;
 
-let grid = [];
-
-// ================== INIT ==================
-function initBoard() {
+// Tạo bàn
+function createBoard() {
   board.innerHTML = "";
-  grid = [];
-
-  for (let r = 0; r < ROWS; r++) {
-    let row = [];
-    for (let c = 0; c < COLS; c++) {
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.textContent = "?";
-      board.appendChild(tile);
-      row.push(tile);
-    }
-    grid.push(row);
+  for (let i = 0; i < ROWS * COLS; i++) {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.textContent = "?";
+    board.appendChild(tile);
   }
 }
+createBoard();
 
-initBoard();
-updateMoney();
+// Random quân
+function randomSymbol() {
+  return symbols[Math.floor(Math.random() * symbols.length)];
+}
 
-// ================== SPIN ==================
-spinBtn.onclick = () => {
+// QUAY
+function spin() {
   if (spinning) return;
   if (money < bet) {
     alert("Không đủ tiền!");
@@ -44,90 +36,64 @@ spinBtn.onclick = () => {
   }
 
   spinning = true;
+  winText.textContent = "ĐANG QUAY...";
   spinBtn.disabled = true;
-  resultEl.textContent = "";
+
   money -= bet;
   updateMoney();
 
-  spinColumns(0);
-};
+  const tiles = document.querySelectorAll(".tile");
+  let result = Array.from({ length: ROWS }, () => Array(COLS).fill(""));
 
-function spinColumns(col) {
-  if (col >= COLS) {
-    spinning = false;
-    spinBtn.disabled = false;
-    checkWin();
-    return;
-  }
-
-  for (let r = 0; r < ROWS; r++) {
-    const sym = randomSymbol();
-    grid[r][col].textContent = sym;
-    grid[r][col].classList.remove("win");
-  }
-
-  setTimeout(() => spinColumns(col + 1), 300);
-}
-
-function randomSymbol() {
-  return symbols[Math.floor(Math.random() * symbols.length)];
-}
-
-// ================== CHECK WIN (x1 → x5) ==================
-function checkWin() {
-  let winCols = 0;
-  let baseSymbol = null;
-
-  for (let col = 0; col < COLS; col++) {
-    let colSymbols = [];
-
-    for (let row = 0; row < ROWS; row++) {
-      colSymbols.push(grid[row][col].textContent);
-    }
-
-    if (col === 0) {
-      baseSymbol = mostCommon(colSymbols);
-      winCols = 1;
-    } else {
-      if (colSymbols.includes(baseSymbol)) {
-        winCols++;
-      } else {
-        break;
-      }
-    }
-  }
-
-  if (winCols > 0) {
-    let multiplier = [0, 1, 2, 5, 10, 20][winCols];
-    let winAmount = bet * multiplier;
-    money += winAmount;
-
-    highlightWin(baseSymbol, winCols);
-    resultEl.textContent = `🎉 THẮNG ${winAmount.toLocaleString()} 🎉`;
-    updateMoney();
-  }
-}
-
-function mostCommon(arr) {
-  return arr.sort(
-    (a, b) =>
-      arr.filter(v => v === a).length -
-      arr.filter(v => v === b).length
-  ).pop();
-}
-
-// ================== EFFECT ==================
-function highlightWin(symbol, cols) {
-  for (let c = 0; c < cols; c++) {
+  // Quay từng cột
+  let col = 0;
+  const interval = setInterval(() => {
     for (let r = 0; r < ROWS; r++) {
-      if (grid[r][c].textContent === symbol) {
-        grid[r][c].classList.add("win");
-      }
+      const index = r * COLS + col;
+      const sym = randomSymbol();
+      tiles[index].textContent = sym;
+      result[r][col] = sym;
     }
-  }
+    col++;
+    if (col >= COLS) {
+      clearInterval(interval);
+      setTimeout(() => finish(result), 300);
+    }
+  }, 250);
 }
 
-// ================== UI ==================
-function updateMoney() {
-  moneyEl.textContent = money.toLocaleString();
+// TÍNH THẮNG
+function finish(result) {
+  let win = 0;
+
+  // kiểm tra hàng ngang
+  for (let r = 0; r < ROWS; r++) {
+    let same = true;
+    for (let c = 1; c < COLS; c++) {
+      if (result[r][c] !== result[r][0]) same = false;
+    }
+    if (same) win += bet * 5;
+  }
+
+  if (win > 0) {
+    money += win;
+    winText.textContent = `🎉 THẮNG ${win.toLocaleString()} 🎉`;
+  } else {
+    winText.textContent = "❌ CHƯA TRÚNG ❌";
+  }
+
+  updateMoney();
+  spinning = false;
+  spinBtn.disabled = false;
 }
+
+// Cập nhật tiền
+function updateMoney() {
+  document.querySelector(".footer").innerHTML = `
+    <div>Tiền: ${money.toLocaleString()}</div>
+    <div>Cược: ${bet.toLocaleString()}</div>
+  `;
+}
+
+// Gán nút
+spinBtn.onclick = spin;
