@@ -1,52 +1,51 @@
 const board = document.getElementById("board");
 
-const ROWS = 5;
-const COLS = 5;
+const symbols = ["中", "發", "白", "萬", "筒", "索"];
 
-// Ký hiệu tạm (chưa cần ảnh)
-const symbols = ["萬", "筒", "索", "中", "發", "白", "W", "S"];
+let tiles = [];
 
-// ===============================
-// TẠO BÀN BAN ĐẦU
-// ===============================
-function createBoard() {
+// tạo bàn 5x5
+function initBoard() {
   board.innerHTML = "";
-  for (let i = 0; i < ROWS * COLS; i++) {
-    const tile = document.createElement("div");
-    tile.className = "tile";
-    tile.textContent = "？";
-    board.appendChild(tile);
+  tiles = [];
+
+  for (let i = 0; i < 25; i++) {
+    const div = document.createElement("div");
+    div.className = "tile";
+    div.textContent = randomSymbol();
+    board.appendChild(div);
+    tiles.push(div);
   }
 }
 
-createBoard();
-
-// ===============================
-// RANDOM SYMBOL
-// ===============================
 function randomSymbol() {
   return symbols[Math.floor(Math.random() * symbols.length)];
 }
 
-// ===============================
-// QUAY TỪNG CỘT
-// ===============================
+// quay từng cột
 function spin() {
-  const tiles = document.querySelectorAll(".tile");
+  let col = 0;
 
-  for (let col = 0; col < COLS; col++) {
-    setTimeout(() => {
-      for (let row = 0; row < ROWS; row++) {
-        const index = row * COLS + col;
-        const tile = tiles[index];
+  function spinColumn() {
+    if (col >= 5) return;
 
-        const symbol = randomSymbol();
-        tile.className = "tile";
-        tile.textContent = symbol;
-
-        if (symbol === "W") tile.classList.add("wild");
-        if (symbol === "S") tile.classList.add("scatter");
+    let count = 0;
+    const interval = setInterval(() => {
+      for (let row = 0; row < 5; row++) {
+        const index = row * 5 + col;
+        tiles[index].textContent = randomSymbol();
       }
-    }, col * 300); // delay từng cột
+      count++;
+      if (count > 10) {
+        clearInterval(interval);
+        col++;
+        setTimeout(spinColumn, 150);
+      }
+    }, 80);
   }
+
+  spinColumn();
 }
+
+// chạy khi load trang
+initBoard();
