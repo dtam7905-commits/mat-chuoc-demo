@@ -1,33 +1,121 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <link rel="stylesheet" href="css/style.css">
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mạt Chược VN</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1c1c1c;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+    }
+
+    .game {
+      width: 360px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .top-multi {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      margin-bottom: 10px;
+      color: gold;
+      font-weight: bold;
+    }
+
+    #board {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      background: #000;
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    .tile {
+      background: #fff;
+      color: #000;
+      height: 55px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .info {
+      display: flex;
+      justify-content: space-between;
+      margin: 12px 0;
+    }
+
+    #message {
+      color: gold;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .spin {
+      width: 100%;
+      height: 50px;
+      font-size: 20px;
+      font-weight: bold;
+      background: linear-gradient(#ffd45a, #ffb800);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+
+    .spin:active {
+      transform: scale(0.97);
+    }
+  </style>
 </head>
-<body 
-  <body>
+
+<body>
   <div class="game">
-    <div class="header">🀄 Mạt Chược VN</div>
+    <h1>🀄 Mạt Chược VN</h1>
 
-    <div class="multiplier">
-      <span>x1</span>
-      <span>x2</span>
-      <span>x3</span>
-      <span>x5</span>
+    <!-- Hệ số -->
+    <div class="top-multi">
+      <div>x1</div>
+      <div>x2</div>
+      <div>x3</div>
+      <div>x4</div>
+      <div>x5</div>
     </div>
-    
+
+    <!-- Bàn chơi -->
+    <div id="board"></div>
+
+    <!-- Thông báo -->
     <div id="message"></div>
-    <div class="board" id="board"></div>
-<div class="win-text">ĐẠI THẮNG MẠT CHƯỢC</div>
 
-<button class="spin" onclick="spin()">QUAY</button>
-    <div class="footer">
-      <div>Tiền: 500.000</div>
-      <div>Cược: 10.000</div>
+    <!-- Tiền -->
+    <div class="info">
+      <div>Tiền: <span id="money">500.000</span></div>
+      <div>Cược: <span id="bet">10.000</span></div>
     </div>
 
+    <!-- Nút quay -->
+    <button class="spin" onclick="spin()">QUAY</button>
+  </div>
+
+  <!-- JS -->
   <script src="js/game.js"></script>
 </body>
 </html>
