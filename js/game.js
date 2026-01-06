@@ -26,18 +26,27 @@ function createBoard() {
     board.appendChild(tile);
   }
 }
-
-createBoard();
-
 function spin() {
-  createBoard();
-}
-function spin() {
+  const symbols = ["萬", "索", "筒", "中", "發", "白", "🀄", "👑"];
   const tiles = document.querySelectorAll(".tile");
 
-  tiles.forEach(tile => {
-    const symbols = ["萬", "索", "筒", "中", "發", "白", "🀄", "👑"];
-    const rand = symbols[Math.floor(Math.random() * symbols.length)];
-    tile.textContent = rand;
-  });
+  let col = 0;
+
+  const spinInterval = setInterval(() => {
+    for (let row = 0; row < 5; row++) {
+      const index = row * 5 + col;
+      tiles[index].textContent =
+        symbols[Math.floor(Math.random() * symbols.length)];
+    }
+
+    col++;
+
+    if (col >= 5) {
+      clearInterval(spinInterval);
+      checkWin();
+    }
+  }, 200); // tốc độ quay (ms)
+}
+function checkWin() {
+  document.querySelector(".win-text").textContent = "🎉 ĐẠI THẮNG MẠT CHƯỢC 🎉";
 }
