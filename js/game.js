@@ -1,40 +1,59 @@
-function checkWin() {
-  const tiles = document.querySelectorAll(".tile");
-  let winMoney = 0;
-  let winCols = [];
+const board = document.getElementById("board");
+const spinBtn = document.getElementById("spinBtn");
 
-  // duyệt từng cột (x1 → x5)
-  for (let c = 0; c < COLS; c++) {
-    const base = tiles[c].textContent;
-    let same = true;
+const ROWS = 5;
+const COLS = 5;
 
-    for (let r = 1; r < ROWS; r++) {
-      if (tiles[r * COLS + c].textContent !== base) {
-        same = false;
-        break;
-      }
-    }
+// Danh sách quân + ảnh
+const symbols = [
+  { name: "man", img: "img/man.png" },
+  { name: "sach", img: "img/sach.png" },
+  { name: "van", img: "img/van.png" },
+  { name: "trung", img: "img/trung.png" },
+  { name: "phat", img: "img/phat.png" },
+  { name: "bach", img: "img/bach.png" }
+];
 
-    if (same) {
-      winCols.push(c);
-      winMoney += bet * (c + 1); // x1 → x5
-    }
+let cells = [];
+
+// Tạo bàn
+function createBoard() {
+  board.innerHTML = "";
+  cells = [];
+
+  for (let i = 0; i < ROWS * COLS; i++) {
+    const div = document.createElement("div");
+    div.className = "cell";
+    div.innerHTML = `<img src="img/man.png">`;
+    board.appendChild(div);
+    cells.push(div);
   }
-
-  // tô sáng cột trúng
-  if (winCols.length > 0) {
-    winCols.forEach(c => {
-      for (let r = 0; r < ROWS; r++) {
-        tiles[r * COLS + c].style.background = "#ffd54f";
-      }
-    });
-
-    money += winMoney;
-    messageEl.textContent = `🎉 THẮNG ${winMoney.toLocaleString()} 🎉`;
-  } else {
-    messageEl.textContent = "❌ CHƯA TRÚNG ❌";
-  }
-
-  updateUI();
-  spinning = false;
 }
+
+// Random quân
+function randomSymbol() {
+  return symbols[Math.floor(Math.random() * symbols.length)];
+}
+
+// Quay từng cột
+function spin() {
+  spinBtn.disabled = true;
+
+  for (let col = 0; col < COLS; col++) {
+    setTimeout(() => {
+      for (let row = 0; row < ROWS; row++) {
+        const index = row * COLS + col;
+        const s = randomSymbol();
+        cells[index].innerHTML = `<img src="${s.img}">`;
+      }
+
+      if (col === COLS - 1) {
+        spinBtn.disabled = false;
+      }
+    }, col * 300);
+  }
+}
+
+spinBtn.addEventListener("click", spin);
+
+createBoard();
