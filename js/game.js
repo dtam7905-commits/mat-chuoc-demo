@@ -1,123 +1,133 @@
-const board = document.getElementById("board");
-const moneyEl = document.getElementById("money");
-const betEl = document.getElementById("bet");
-const messageEl = document.getElementById("message");
+const ROWS = 5;
+const COLS = 5;
+
+const symbols = ["萬", "索", "筒", "中", "發", "白"];
 
 let money = 500000;
 let bet = 10000;
+let spinning = false;
 
-const symbols = [
-  { name: "萬", type: "normal" },
-  { name: "索", type: "normal" },
-  { name: "筒", type: "normal" },
-  { name: "中", type: "normal" },
-  { name: "白", type: "normal" },
-  { name: "發", type: "wild" },
-  { name: "🀄", type: "scatter" }
-];
+const board = document.getElementById("board");
+const spinBtn = document.getElementById("spinBtn");
+const moneyEl = document.getElementById("money");
+const resultEl = document.getElementById("result");
 
-const spinSound = new Audio("spin.mp3");
-const winSound = new Audio("win.mp3");
+let grid = [];
+
+// ================== INIT ==================
+function initBoard() {
+  board.innerHTML = "";
+  grid = [];
+
+  for (let r = 0; r < ROWS; r++) {
+    let row = [];
+    for (let c = 0; c < COLS; c++) {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.textContent = "?";
+      board.appendChild(tile);
+      row.push(tile);
+    }
+    grid.push(row);
+  }
+}
+
+initBoard();
+updateMoney();
+
+// ================== SPIN ==================
+spinBtn.onclick = () => {
+  if (spinning) return;
+  if (money < bet) {
+    alert("Không đủ tiền!");
+    return;
+  }
+
+  spinning = true;
+  spinBtn.disabled = true;
+  resultEl.textContent = "";
+  money -= bet;
+  updateMoney();
+
+  spinColumns(0);
+};
+
+function spinColumns(col) {
+  if (col >= COLS) {
+    spinning = false;
+    spinBtn.disabled = false;
+    checkWin();
+    return;
+  }
+
+  for (let r = 0; r < ROWS; r++) {
+    const sym = randomSymbol();
+    grid[r][col].textContent = sym;
+    grid[r][col].classList.remove("win");
+  }
+
+  setTimeout(() => spinColumns(col + 1), 300);
+}
 
 function randomSymbol() {
   return symbols[Math.floor(Math.random() * symbols.length)];
 }
 
-// tạo bàn
-function createBoard() {
-  board.innerHTML = "";
-  for (let i = 0; i < 25; i++) {
-    const tile = document.createElement("div");
-    tile.className = "tile";
-    tile.textContent = "?";
-    board.appendChild(tile);
-  }
-}
-
-function spin() {
-  if (money < bet) {
-    alert("Không đủ tiền");
-    return;
-  }
-
-  spinSound.play();
-  messageEl.textContent = "";
-  money -= bet;
-  updateMoney();
-
-  const tiles = document.querySelectorAll(".tile");
-  let col = 0;
-
-  const interval = setInterval(() => {
-    for (let row = 0; row < 5; row++) {
-      const index = row * 5 + col;
-      const sym = randomSymbol();
-      tiles[index].textContent = sym.name;
-      tiles[index].dataset.type = sym.type;
-      tiles[index].className = "tile spinning";
-    }
-
-    col++;
-    if (col === 5) {
-      clearInterval(interval);
-      setTimeout(checkWin, 400);
-    }
-  }, 250);
-}
-
+// ================== CHECK WIN (x1 → x5) ==================
 function checkWin() {
-  const tiles = document.querySelectorAll(".tile");
-  let totalWin = 0;
+  let winCols = 0;
+  let baseSymbol = null;
 
-  // kiểm tra 5 hàng ngang
-  for (let row = 0; row < 5; row++) {
-    const rowTiles = [];
-    for (let col = 0; col < 5; col++) {
-      rowTiles.push(tiles[row * 5 + col]);
+  for (let col = 0; col < COLS; col++) {
+    let colSymbols = [];
+
+    for (let row = 0; row < ROWS; row++) {
+      colSymbols.push(grid[row][col].textContent);
     }
 
-    const first = rowTiles[0].textContent;
-    let win = rowTiles.every(
-      t => t.textContent === first || t.dataset.type === "wild"
-    );
-
-    if (win) {
-      rowTiles.forEach(t => t.classList.add("win"));
-      totalWin += bet * 5;
+    if (col === 0) {
+      baseSymbol = mostCommon(colSymbols);
+      winCols = 1;
+    } else {
+      if (colSymbols.includes(baseSymbol)) {
+        winCols++;
+      } else {
+        break;
+      }
     }
   }
 
-  // scatter
-  const scatters = [...tiles].filter(t => t.dataset.type === "scatter");
-  if (scatters.length >= 3) {
-    scatters.forEach(t => t.classList.add("win"));
-    totalWin += bet * 10;
-  }
+  if (winCols > 0) {
+    let multiplier = [0, 1, 2, 5, 10, 20][winCols];
+    let winAmount = bet * multiplier;
+    money += winAmount;
 
-  if (totalWin > 0) {
-    winSound.play();
-    money += totalWin;
-    messageEl.textContent = `🎉 THẮNG ${totalWin.toLocaleString()} 🎉`;
+    highlightWin(baseSymbol, winCols);
+    resultEl.textContent = `🎉 THẮNG ${winAmount.toLocaleString()} 🎉`;
+    updateMoney();
   }
-
-  updateMoney();
 }
 
+function mostCommon(arr) {
+  return arr.sort(
+    (a, b) =>
+      arr.filter(v => v === a).length -
+      arr.filter(v => v === b).length
+  ).pop();
+}
+
+// ================== EFFECT ==================
+function highlightWin(symbol, cols) {
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < ROWS; r++) {
+      if (grid[r][c].textContent === symbol) {
+        grid[r][c].classList.add("win");
+      }
+    }
+  }
+}
+
+// ================== UI ==================
 function updateMoney() {
   moneyEl.textContent = money.toLocaleString();
-  betEl.textContent = bet.toLocaleString();
 }
-
-// ADMIN PANEL ẨN
-document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.key === "a") {
-    const pin = prompt("Nhập PIN admin:");
-    if (pin === "9999") {
-      const newMoney = prompt("Tiền mới:");
-      money = parseInt(newMoney || money);
-      updateMoney();
-    }
-  }
-});
-
-createBoard();
