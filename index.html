@@ -6,9 +6,31 @@
   <title>Mạt Chược VN</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="background:#111;color:#fff;text-align:center;padding-top:40px">
-  <h1>🀄 Mạt Chược VN</h1>
-  <p>Game đã load thành công</p>
-  <button onclick="alert('Spin!')">Quay</button>
+<body 
+  <body>
+  <div class="game">
+    <div class="header">🀄 Mạt Chược VN</div>
+
+    <div class="multiplier">
+      <span>x1</span>
+      <span>x2</span>
+      <span>x3</span>
+      <span>x5</span>
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <div class="win-text">ĐẠI THẮNG MẠT CHƯỢC</div>
+
+    <div class="footer">
+      <div>Tiền: 500.000</div>
+      <div>Cược: 10.000</div>
+    </div>
+
+    <button class="spin" onclick="spin()">QUAY</button>
+  </div>
+
+  <script src="js/game.js"></script>
+</body>
 </body>
 </html>
