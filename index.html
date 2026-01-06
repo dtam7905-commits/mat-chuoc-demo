@@ -3,92 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <title>Mạt Chược VN</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b5e3c;
-      color: #fff;
-      text-align: center;
-    }
-
-    h1 {
-      margin: 15px 0;
-    }
-
-    #top {
-      display: flex;
-      justify-content: center;
-      gap: 30px;
-      margin-bottom: 10px;
-      font-size: 18px;
-    }
-
-    #board {
-      display: grid;
-      grid-template-columns: repeat(5, 70px);
-      grid-template-rows: repeat(5, 70px);
-      gap: 6px;
-      justify-content: center;
-      margin: 20px auto;
-    }
-
-    .tile {
-      background: #fff;
-      color: #000;
-      font-size: 28px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      box-shadow: inset 0 0 5px rgba(0,0,0,0.4);
-    }
-
-    #controls {
-      margin-top: 15px;
-    }
-
-    button.spin {
-      padding: 12px 30px;
-      font-size: 20px;
-      border: none;
-      border-radius: 8px;
-      background: gold;
-      color: #000;
-      cursor: pointer;
-    }
-
-    #message {
-      margin-top: 15px;
-      font-size: 18px;
-      min-height: 24px;
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-  <h1>🀄 MẠT CHƯỢC VN</h1>
+<h1>🀄 MẠT CHƯỢC VN</h1>
 
-  <div id="top">
-    <div>💰 Tiền: <span id="money">0</span></div>
-    <div>🎰 Cược: <span id="bet">0</span></div>
-  </div>
+<div id="board"></div>
 
-  <!-- BÀN CHƠI -->
-  <div id="board"></div>
+<button id="spinBtn">QUAY</button>
 
-  <!-- NÚT -->
-  <div id="controls">
-    <button class="spin" onclick="spin()">QUAY</button>
-  </div>
-
-  <div id="message"></div>
-
-  <!-- JS (BẮT BUỘC ĐỂ CUỐI BODY) -->
-  <script src="./js/game.js"></script>
-
+<script src="js/game.js"></script>
 </body>
 </html>
