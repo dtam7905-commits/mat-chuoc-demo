@@ -4,88 +4,74 @@
 <meta charset="UTF-8">
 <title>Mạt Chược Slot VN</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <style>
-body{
-  margin:0;background:#0f5c3a;color:#fff;
-  font-family:Arial;text-align:center
-}
+body{margin:0;background:#0f5c3a;color:#fff;font-family:Arial;text-align:center}
 h1{margin:10px}
 #top{display:flex;justify-content:space-around;font-size:18px}
-#board{
-  width:340px;margin:10px auto;
-  background:#000;padding:10px;border-radius:15px
-}
+#board{width:360px;margin:10px auto;background:#000;padding:10px;border-radius:15px}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
-.cell{
-  background:#fff;border-radius:8px;
-  height:55px;display:flex;
-  align-items:center;justify-content:center;
-}
+.cell{background:#fff;border-radius:8px;height:55px;display:flex;align-items:center;justify-content:center}
 .cell img{width:40px}
 .win{box-shadow:0 0 12px 5px gold;animation:shake .3s}
 @keyframes shake{
-  0%{transform:translate(0)}
-  25%{transform:translate(2px)}
-  50%{transform:translate(-2px)}
-  75%{transform:translate(2px)}
+ 0%{transform:translate(0)}
+ 25%{transform:translate(2px)}
+ 50%{transform:translate(-2px)}
 }
-button{
-  padding:10px 22px;font-size:16px;
-  border:none;border-radius:10px;background:gold
-}
+button{padding:10px 22px;font-size:16px;border:none;border-radius:10px;background:gold}
 #msg{margin-top:10px;font-size:18px}
-#admin{
-  position:fixed;inset:0;
-  background:rgba(0,0,0,.85);
-  display:none;color:#fff
-}
+#fs{margin-top:5px;color:#ffd700}
+#admin{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none}
 </style>
 </head>
 
 <body>
-<h1>🀄 MẠT CHƯỢC VN</h1>
+<h1>🀄 MẠT CHƯỢC VN – 1024 WAYS</h1>
 
 <div id="top">
-  <div>💰 <span id="money"></span></div>
-  <div>🎯 <span id="bet"></span></div>
+ <div>💰 <span id="money"></span></div>
+ <div>🎯 <span id="bet"></span></div>
 </div>
 
-<div id="board">
-  <div class="grid" id="grid"></div>
-</div>
+<div id="board"><div class="grid" id="grid"></div></div>
 
 <button onclick="betDown()">-</button>
 <button onclick="spin()">QUAY</button>
 <button onclick="betUp()">+</button>
 
+<div id="fs"></div>
 <div id="msg"></div>
 
 <!-- ADMIN -->
 <div id="admin">
-  <h2>ADMIN</h2>
-  <input id="pin" placeholder="PIN">
-  <button onclick="login()">OK</button><br><br>
-  <button onclick="money+=100000;save()">+TIỀN</button>
-  <button onclick="money-=100000;save()">-TIỀN</button>
-  <button onclick="admin.style.display='none'">ĐÓNG</button>
+ <h2>ADMIN</h2>
+ <input id="pin" placeholder="PIN">
+ <button onclick="login()">OK</button><br><br>
+ <button onclick="money+=100000;save()">+TIỀN</button>
+ <button onclick="money-=100000;save()">-TIỀN</button>
+ <button onclick="forceWin=true">FORCE WIN</button>
+ <button onclick="forceScatter=true">FORCE SCATTER</button><br><br>
+ <button onclick="admin.style.display='none'">ĐÓNG</button>
 </div>
 
 <script>
-/* ===== BASE64 ẢNH (DEMO) ===== */
-const img=(c)=>`data:image/svg+xml;base64,${btoa(
+/* ===== IMAGE BASE64 ===== */
+const img=c=>`data:image/svg+xml;base64,${btoa(
 `<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'>
 <rect width='100%' height='100%' rx='10' fill='${c}'/>
 </svg>`)}`
 const IMAGES={
- man:img('#d32'), pin:img('#39f'), sou:img('#3c3'),
- trung:img('#f33'), phat:img('#0c6'), bach:img('#fff'),
- wild:img('#fc0'), scatter:img('#f0f')
+ man:img('#d32'),pin:img('#39f'),sou:img('#3c3'),
+ trung:img('#f33'),phat:img('#0c6'),bach:img('#999'),
+ wild:img('#fc0'),scatter:img('#f0f')
 }
 
-/* ===== DATA ===== */
+/* ===== STATE ===== */
 let money=+localStorage.money||500000
 let bet=+localStorage.bet||2000
+let freeSpin=0
+let forceWin=false,forceScatter=false
+
 const rows=5,cols=5
 const grid=document.getElementById("grid")
 
@@ -97,87 +83,107 @@ const symbols=[
 
 /* ===== INIT ===== */
 for(let i=0;i<25;i++){
- const d=document.createElement('div')
+ let d=document.createElement('div')
  d.className='cell'
  grid.appendChild(d)
 }
 update()
 
+/* ===== AUDIO (WEB) ===== */
+const ctx=new (window.AudioContext||webkitAudioContext)()
+const beep=f=>{
+ let o=ctx.createOscillator()
+ let g=ctx.createGain()
+ o.frequency.value=f
+ o.connect(g);g.connect(ctx.destination)
+ o.start();g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+.2)
+}
+
 /* ===== SPIN ===== */
 async function spin(){
- if(money<bet)return
- money-=bet;update();clear()
+ if(freeSpin===0 && money<bet)return
+ clear()
+
+ if(freeSpin>0) freeSpin--
+ else money-=bet
+
+ update(); beep(300)
 
  let board=[...Array(rows)].map(()=>[])
  let scat=0
 
  for(let c=0;c<cols;c++){
   for(let r=0;r<rows;r++){
-   await sleep(80)
-   const s=rand()
-   set(r,c,s)
-   board[r][c]=s
+   await sleep(freeSpin?50:100)
+   let s=rand()
+   if(forceScatter) s={k:'scatter'}
+   set(r,c,s); board[r][c]=s
    if(s.k==='scatter')scat++
   }
  }
 
+ forceScatter=false
+
  if(scat>=3){
-  alert('SCATTER BONUS +100K')
-  money+=100000;save();update()
-  return
+  freeSpin+=scat===3?8:scat===4?12:20
+  beep(120); update()
  }
 
- check(board)
-}
-
-/* ===== WIN ===== */
-function check(b){
- let win=0
- for(let r=0;r<rows;r++){
-  let f=b[r][0]
-  let count=1
-  for(let c=1;c<cols;c++){
-   if(b[r][c].k===f.k||b[r][c].k==='wild')count++
-  }
-  if(count>=3){
-   win+=bet*f.w
-   for(let c=0;c<count;c++)
-    grid.children[r*cols+c].classList.add('win')
-  }
- }
- if(win>0){
-  money+=win
-  msg.innerText='🎉 THẮNG '+win
+ const res=calcWays(board)
+ if(res.win>0){
+  money+=res.win*(freeSpin?2:1)
+  beep(600)
+  res.cells.forEach(i=>grid.children[i].classList.add('win'))
+  msg.innerText='🎉 THẮNG '+res.win
  }else msg.innerText='❌ CHƯA TRÚNG'
+
  save();update()
 }
 
-/* ===== UI ===== */
-function set(r,c,s){
- grid.children[r*cols+c].innerHTML=
- `<img src="${IMAGES[s.k]}">`
+/* ===== 1024 WAYS ===== */
+function calcWays(b){
+ let win=0,cells=new Set()
+ symbols.filter(s=>!s.s).forEach(sym=>{
+  let m=[]
+  for(let c=0;c<cols;c++){
+   let col=[]
+   for(let r=0;r<rows;r++)
+    if(b[r][c].k===sym.k||b[r][c].k==='wild') col.push({r,c})
+   if(!col.length)break
+   m.push(col)
+  }
+  if(m.length>=3){
+   let ways=m.reduce((a,b)=>a*b.length,1)
+   win+=ways*bet*sym.w
+   m.forEach(col=>col.forEach(p=>cells.add(p.r*cols+p.c)))
+  }
+ })
+ return{win,cells}
 }
-function rand(){return symbols[Math.floor(Math.random()*symbols.length)]}
+
+/* ===== UTIL ===== */
+function rand(){
+ if(forceWin) return symbols.find(s=>s.k==='wild')
+ return symbols[Math.floor(Math.random()*symbols.length)]
+}
+function set(r,c,s){
+ grid.children[r*cols+c].innerHTML=`<img src="${IMAGES[s.k]}">`
+}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function update(){
  moneyEl.innerText=money
  betEl.innerText=bet
+ fs.innerText=freeSpin?`FREE SPIN: ${freeSpin}`:''
 }
 function save(){
  localStorage.money=money
  localStorage.bet=bet
 }
 function clear(){
- document.querySelectorAll('.cell')
- .forEach(c=>c.classList.remove('win'))
+ document.querySelectorAll('.cell').forEach(c=>c.classList.remove('win'))
 }
 function betUp(){if(bet<500000)bet+=2000;save();update()}
 function betDown(){if(bet>2000)bet-=2000;save();update()}
-
-const moneyEl=document.getElementById('money')
-const betEl=document.getElementById('bet')
-const msg=document.getElementById('msg')
-const admin=document.getElementById('admin')
 
 /* ===== ADMIN ===== */
 document.addEventListener('keydown',e=>{
@@ -187,6 +193,13 @@ function login(){
  if(pin.value==='9999')alert('ADMIN OK')
  else alert('SAI PIN')
 }
+
+/* ===== DOM ===== */
+const moneyEl=document.getElementById('money')
+const betEl=document.getElementById('bet')
+const msg=document.getElementById('msg')
+const fs=document.getElementById('fs')
+const admin=document.getElementById('admin')
 </script>
 </body>
 </html>
