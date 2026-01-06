@@ -1,51 +1,45 @@
 const board = document.getElementById("board");
+const ROWS = 5;
+const COLS = 5;
 
-const symbols = ["中", "發", "白", "萬", "筒", "索"];
+// Danh sách quân demo
+const symbols = ["萬", "筒", "索", "中", "發", "白"];
 
-let tiles = [];
-
-// tạo bàn 5x5
-function initBoard() {
+// Tạo bàn 5x5
+function createBoard() {
   board.innerHTML = "";
-  tiles = [];
-
-  for (let i = 0; i < 25; i++) {
-    const div = document.createElement("div");
-    div.className = "tile";
-    div.textContent = randomSymbol();
-    board.appendChild(div);
-    tiles.push(div);
+  for (let i = 0; i < ROWS * COLS; i++) {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    tile.textContent = "?";
+    board.appendChild(tile);
   }
 }
 
+// Random quân
 function randomSymbol() {
   return symbols[Math.floor(Math.random() * symbols.length)];
 }
 
-// quay từng cột
+// QUAY – quay từng cột
 function spin() {
+  const tiles = document.querySelectorAll(".tile");
   let col = 0;
 
-  function spinColumn() {
-    if (col >= 5) return;
+  const interval = setInterval(() => {
+    if (col >= COLS) {
+      clearInterval(interval);
+      return;
+    }
 
-    let count = 0;
-    const interval = setInterval(() => {
-      for (let row = 0; row < 5; row++) {
-        const index = row * 5 + col;
-        tiles[index].textContent = randomSymbol();
-      }
-      count++;
-      if (count > 10) {
-        clearInterval(interval);
-        col++;
-        setTimeout(spinColumn, 150);
-      }
-    }, 80);
-  }
+    for (let row = 0; row < ROWS; row++) {
+      const index = row * COLS + col;
+      tiles[index].textContent = randomSymbol();
+    }
 
-  spinColumn();
+    col++;
+  }, 150);
 }
 
-// chạy khi load trang
-initBoard();
+// Load lần đầu
+createBoard();
