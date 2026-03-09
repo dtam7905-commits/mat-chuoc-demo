@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Bàn Tài Xỉu</title>
+
+<style>
+body{
+    background:#0b5;
+    font-family:Arial;
+    text-align:center;
+    color:white;
+}
+
+.ban{
+    width:350px;
+    margin:auto;
+    background:#064;
+    padding:20px;
+    border-radius:15px;
+}
+
+.cuoc{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+}
+
+button{
+    width:140px;
+    height:80px;
+    font-size:25px;
+    border:none;
+    border-radius:10px;
+}
+
+.tai{background:red;color:white;}
+.xiu{background:blue;color:white;}
+
+.xucxac{
+    font-size:40px;
+    margin-top:20px;
+}
+
+.kq{
+    font-size:28px;
+    margin-top:10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🎲 Bàn Tài Xỉu</h1>
+
+<div class="ban">
+
+<h2>Tiền: <span id="money">1000</span> 💰</h2>
+
+<div class="xucxac" id="dice">
+⚀ ⚀ ⚀
+</div>
+
+<div class="cuoc">
+<button class="tai" onclick="play('tai')">TÀI</button>
+<button class="xiu" onclick="play('xiu')">XỈU</button>
+</div>
+
+<div class="kq" id="result"></div>
+
+</div>
+
+<script>
+
+let money = 1000;
+
+function roll(){
+let d1 = Math.floor(Math.random()*6)+1;
+let d2 = Math.floor(Math.random()*6)+1;
+let d3 = Math.floor(Math.random()*6)+1;
+
+let total = d1+d2+d3;
+
+document.getElementById("dice").innerHTML =
+d1+" 🎲 "+d2+" 🎲 "+d3;
+
+return total;
+}
+
+function play(choice){
+
+let total = roll();
+let kq = total >= 11 ? "tai":"xiu";
+
+if(choice==kq){
+money += 100;
+document.getElementById("result").innerText =
+"Bạn thắng! Tổng: "+total;
+}else{
+money -= 100;
+document.getElementById("result").innerText =
+"Bạn thua! Tổng: "+total;
+}
+
+document.getElementById("money").innerText = money;
+
+}
+
+</script>
+
+</body>
+</html>
