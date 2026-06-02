@@ -1,112 +1,135 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Bàn Tài Xỉu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tài Xỉu Demo</title>
 
 <style>
 body{
-    background:#0b5;
-    font-family:Arial;
+    font-family: Arial, sans-serif;
     text-align:center;
-    color:white;
+    margin-top:40px;
+    background:#f5f5f5;
 }
-
-.ban{
-    width:350px;
+.container{
+    background:white;
+    width:400px;
     margin:auto;
-    background:#064;
     padding:20px;
-    border-radius:15px;
-}
-
-.cuoc{
-    display:flex;
-    justify-content:space-between;
-    margin-top:20px;
-}
-
-button{
-    width:140px;
-    height:80px;
-    font-size:25px;
-    border:none;
     border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
-
-.tai{background:red;color:white;}
-.xiu{background:blue;color:white;}
-
-.xucxac{
-    font-size:40px;
+input,select,button{
+    padding:10px;
+    margin:8px;
+}
+button{
+    cursor:pointer;
+    background:#4CAF50;
+    color:white;
+    border:none;
+    border-radius:5px;
+}
+#result{
     margin-top:20px;
+    font-size:18px;
 }
-
-.kq{
-    font-size:28px;
-    margin-top:10px;
+.balance{
+    color:#2196F3;
+    font-weight:bold;
+    font-size:22px;
 }
 </style>
-
 </head>
 
 <body>
 
-<h1>🎲 Bàn Tài Xỉu</h1>
+<div class="container">
+    <h2>Tài Xỉu Demo</h2>
 
-<div class="ban">
+    <p>Điểm hiện có:</p>
+    <div class="balance" id="balance">1000</div>
 
-<h2>Tiền: <span id="money">1000</span> 💰</h2>
+    <div>
+        <select id="choice">
+            <option value="tai">Tài (11-17)</option>
+            <option value="xiu">Xỉu (4-10)</option>
+        </select>
+    </div>
 
-<div class="xucxac" id="dice">
-⚀ ⚀ ⚀
-</div>
+    <div>
+        <input type="number" id="bet" min="1" value="100" placeholder="Số điểm cược">
+    </div>
 
-<div class="cuoc">
-<button class="tai" onclick="play('tai')">TÀI</button>
-<button class="xiu" onclick="play('xiu')">XỈU</button>
-</div>
+    <button onclick="play()">Lắc Xúc Xắc</button>
 
-<div class="kq" id="result"></div>
-
+    <div id="result"></div>
 </div>
 
 <script>
+let balance = 1000;
 
-let money = 1000;
-
-function roll(){
-let d1 = Math.floor(Math.random()*6)+1;
-let d2 = Math.floor(Math.random()*6)+1;
-let d3 = Math.floor(Math.random()*6)+1;
-
-let total = d1+d2+d3;
-
-document.getElementById("dice").innerHTML =
-d1+" 🎲 "+d2+" 🎲 "+d3;
-
-return total;
+function dice() {
+    return Math.floor(Math.random() * 6) + 1;
 }
 
-function play(choice){
+function play() {
 
-let total = roll();
-let kq = total >= 11 ? "tai":"xiu";
+    let bet = parseInt(document.getElementById("bet").value);
+    let choice = document.getElementById("choice").value;
 
-if(choice==kq){
-money += 100;
-document.getElementById("result").innerText =
-"Bạn thắng! Tổng: "+total;
-}else{
-money -= 100;
-document.getElementById("result").innerText =
-"Bạn thua! Tổng: "+total;
+    if (isNaN(bet) || bet <= 0) {
+        alert("Nhập số điểm cược hợp lệ!");
+        return;
+    }
+
+    if (bet > balance) {
+        alert("Không đủ điểm!");
+        return;
+    }
+
+    let d1 = dice();
+    let d2 = dice();
+    let d3 = dice();
+
+    let total = d1 + d2 + d3;
+
+    let result = "";
+
+    if (total >= 11 && total <= 17) {
+        result = "tai";
+    } else if (total >= 4 && total <= 10) {
+        result = "xiu";
+    } else {
+        result = "bo3"; // 3 hoặc 18
+    }
+
+    let message = "";
+
+    if (result === choice) {
+        balance += bet;
+        message = "🎉 Thắng +" + bet + " điểm";
+    } else {
+        balance -= bet;
+        message = "❌ Thua -" + bet + " điểm";
+    }
+
+    document.getElementById("balance").innerText = balance;
+
+    document.getElementById("result").innerHTML = `
+        <p>Xúc xắc: ${d1} - ${d2} - ${d3}</p>
+        <p>Tổng: <b>${total}</b></p>
+        <p>Kết quả: <b>${result.toUpperCase()}</b></p>
+        <p>${message}</p>
+    `;
+
+    if (balance <= 0) {
+        alert("Bạn đã hết điểm!");
+        balance = 1000;
+        document.getElementById("balance").innerText = balance;
+    }
 }
-
-document.getElementById("money").innerText = money;
-
-}
-
 </script>
 
 </body>
