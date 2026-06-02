@@ -1,41 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Center Demo</title>
 
-var add       = require('./add');
-var remove    = require('./remove');
-var list      = require('./list');
-var rut       = require('./rut');
-var updateRut = require('./updateRut');
-var updateNap = require('./updateNap');
-
-var nap       = require('./nap');
-var napAdd    = require('./napAdd');
-var napRemove = require('./napRemove');
-
-module.exports = function (client, data) {
-	if (!!data.list) {
-		list(client);
-	}
-	if (!!data.add) {
-		add(client, data.add);
-	}
-	if (!!data.remove) {
-		remove(client, data.remove);
-	}
-	if (!!data.rut) {
-		rut(client, data.rut);
-	}
-	if (!!data.updateRut) {
-		updateRut(client, data.updateRut);
-	}
-	if (!!data.updateNap) {
-		updateNap(client, data.updateNap);
-	}
-	if (!!data.nap) {
-		nap(client, data.nap);
-	}
-	if (!!data.napAdd) {
-		napAdd(client, data.napAdd);
-	}
-	if (!!data.napremove) {
-		napRemove(client, data.napremove);
-	}
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
 }
+
+body{
+background:#0f0f18;
+color:#fff;
+padding-bottom:80px;
+}
+
+.header{
+height:70px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:0 15px;
+background:#181826;
+border-bottom:2px solid gold;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+color:gold;
+}
+
+.balance{
+background:#242438;
+padding:8px 15px;
+border-radius:20px;
+color:#ffd700;
+}
+
+.jackpot{
+background:#000;
+color:#00ff7f;
+padding:8px;
+border-top:1px solid gold;
+border-bottom:1px solid gold;
+}
+
+.banner{
+height:220px;
+background:linear-gradient(135deg,#4b0082,#ffd700);
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:30px;
+font-weight:bold;
+text-shadow:
+0 0 10px #fff,
+0 0 20px gold;
+}
+
+.vip-club{
+display:flex;
+overflow-x:auto;
+padding:10px;
+gap:10px;
+}
+
+.vip{
+min-width:100px;
+background:#222;
+padding:12px;
+border-radius:12px;
+text-align:center;
+color:gold;
+box-shadow:0 0 10px gold;
+}
+
+.title{
+text-align:center;
+padding:15px;
+font-size:24px;
+color:gold;
+}
+
+.games{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:12px;
+padding:12px;
+}
+
+.game{
+background:#1f1f2d;
+border-radius:15px;
+overflow:hidden;
+text-decoration:none;
+color:white;
+border:2px solid #333;
+box-shadow:
+0 0 5px gold,
+0 0 10px purple;
+}
+
+.thumb{
+height:120px;
+background:linear-gradient(
+135deg,
+#6a0dad,
+#ffd700
+);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:20px;
+font-weight:bold;
+}
+
+.name{
+padding:12px;
+text-align:center;
+}
+
+.pagination{
+display:flex;
+justify-content:center;
+gap:10px;
+margin:20px;
+}
+
+.pagination button{
+width:40px;
+height:40px;
+border:none;
+border-radius:50%;
+background:#222;
+color:white;
+}
+
+.pagination button:hover{
+background:gold;
+color:black;
+}
+
+.mini{
+position:fixed;
+right:10px;
+top:250px;
+width:80px;
+height:80px;
+border-radius:50%;
+background:gold;
+color:black;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold;
+box-shadow:0 0 20px gold;
+}
+
+.bottom{
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+background:#181826;
+display:flex;
+justify-content:space-around;
+padding:12px;
+border-top:2px solid gold;
+}
+
+.bottom button{
+background:none;
+border:none;
+color:white;
+font-size:14px;
+}
+
+.admin{
+margin:20px;
+padding:15px;
+background:#222;
+border-radius:15px;
+text-align:center;
+border:1px solid gold;
+}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+<div class="logo">GAME CENTER</div>
+<div class="balance">88,888,888</div>
+</div>
+
+<div class="jackpot">
+<marquee>
+🎉 Người chơi DEMO001 nhận thưởng lớn |
+🎉 Chào mừng đến Game Center Demo
+</marquee>
+</div>
+
+<div class="banner">
+GAME LOBBY
+</div>
+
+<div class="vip-club">
+<div class="vip">VIP 1</div>
+<div class="vip">VIP 2</div>
+<div class="vip">VIP 3</div>
+<div class="vip">VIP 4</div>
+<div class="vip">VIP 5</div>
+</div>
+
+<div class="title">
+🔥 10 GAME HOT 🔥
+</div>
+
+<div class="games">
+
+<a class="game" href="#">
+<div class="thumb">🀄</div>
+<div class="name">Đường Mạt Chược</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">⚔️</div>
+<div class="name">Quyết Chiến</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">🎲</div>
+<div class="name">Tài Xỉu (Demo)</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">✈️</div>
+<div class="name">Bay Máy Bay (Demo)</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">♠️</div>
+<div class="name">Poker</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">🃏</div>
+<div class="name">Baccarat</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">🎡</div>
+<div class="name">Roulette</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">🎰</div>
+<div class="name">Slot</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">🐟</div>
+<div class="name">Bắn Cá</div>
+</a>
+
+<a class="game" href="#">
+<div class="thumb">🏆</div>
+<div class="name">Thể Thao</div>
+</a>
+
+</div>
+
+<div class="pagination">
+<button>1</button>
+<button>2</button>
+<button>3</button>
+<button>4</button>
+<button>5</button>
+</div>
+
+<div class="admin">
+⚙ ADMIN DASHBOARD (DEMO)
+</div>
+
+<div class="mini">
+MINI
+</div>
+
+<div class="bottom">
+<button>🏠 Home</button>
+<button>🎁 Event</button>
+<button>👑 VIP</button>
+<button>📨 Inbox</button>
+<button>⚙️ More</button>
+</div>
+
+</body>
+</html>
