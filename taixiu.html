@@ -3,131 +3,375 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tài Xỉu Demo</title>
+<title>Mini Dice Game</title>
 
 <style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
 body{
-    font-family: Arial, sans-serif;
-    text-align:center;
-    margin-top:40px;
-    background:#f5f5f5;
-}
-.container{
-    background:white;
-    width:400px;
-    margin:auto;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px rgba(0,0,0,0.2);
-}
-input,select,button{
-    padding:10px;
-    margin:8px;
-}
-button{
-    cursor:pointer;
-    background:#4CAF50;
+    background:#0f172a;
     color:white;
-    border:none;
-    border-radius:5px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px;
 }
-#result{
-    margin-top:20px;
-    font-size:18px;
-}
+
 .balance{
-    color:#2196F3;
+    font-size:28px;
     font-weight:bold;
+    color:#22c55e;
+    margin-bottom:20px;
+}
+
+.board{
+    width:850px;
+    max-width:95%;
+    height:340px;
+    border:8px solid #c07a52;
+    border-radius:170px;
+    position:relative;
+    background:#1e293b;
+}
+
+.side{
+    width:180px;
+    height:100px;
+    border:4px solid #fff;
+    border-radius:20px;
+    position:absolute;
+    top:70px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.side:hover{
+    transform:scale(1.05);
+}
+
+.left{
+    left:55px;
+}
+
+.right{
+    right:55px;
+}
+
+.selected{
+    background:#f59e0b;
+    color:black;
+}
+
+.center{
+    width:170px;
+    height:170px;
+    border:4px solid white;
+    border-radius:50%;
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:60px;
+}
+
+.topbox{
+    position:absolute;
+    top:10px;
+    left:50%;
+    transform:translateX(-50%);
+    border:3px solid white;
+    width:140px;
+    text-align:center;
+    padding:6px;
+    border-radius:8px;
+}
+
+.chips{
+    margin-top:25px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.chip{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.chip:nth-child(1){background:#ef4444;}
+.chip:nth-child(2){background:#f59e0b;}
+.chip:nth-child(3){background:#22c55e;}
+.chip:nth-child(4){background:#3b82f6;}
+.chip:nth-child(5){background:#a855f7;}
+
+.actions{
+    margin-top:20px;
+}
+
+button.action{
+    padding:12px 24px;
+    margin:5px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+#shakeBtn{
+    background:#f59e0b;
+}
+
+#openBtn{
+    background:#3b82f6;
+    color:white;
+}
+
+#info{
+    margin-top:20px;
     font-size:22px;
+    text-align:center;
+}
+
+.history{
+    margin-top:20px;
+    width:850px;
+    max-width:95%;
+    background:#111827;
+    padding:15px;
+    border-radius:10px;
+}
+
+.history h3{
+    margin-bottom:10px;
+}
+
+.history-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.item{
+    background:#374151;
+    padding:8px 12px;
+    border-radius:8px;
 }
 </style>
 </head>
-
 <body>
 
-<div class="container">
-    <h2>Tài Xỉu Demo</h2>
+<div class="balance">
+Điểm: <span id="balance">1000</span>
+</div>
 
-    <p>Điểm hiện có:</p>
-    <div class="balance" id="balance">1000</div>
+<div class="board">
 
-    <div>
-        <select id="choice">
-            <option value="tai">Tài (11-17)</option>
-            <option value="xiu">Xỉu (4-10)</option>
-        </select>
-    </div>
+<div class="topbox">
+Phiên Demo
+</div>
 
-    <div>
-        <input type="number" id="bet" min="1" value="100" placeholder="Số điểm cược">
-    </div>
+<div class="side left" id="leftBox">
+LỚN
+</div>
 
-    <button onclick="play()">Lắc Xúc Xắc</button>
+<div class="center" id="bowl">
+🎲
+</div>
 
-    <div id="result"></div>
+<div class="side right" id="rightBox">
+NHỎ
+</div>
+
+</div>
+
+<div class="chips">
+<button class="chip" onclick="setBet(10)">10</button>
+<button class="chip" onclick="setBet(50)">50</button>
+<button class="chip" onclick="setBet(100)">100</button>
+<button class="chip" onclick="setBet(500)">500</button>
+<button class="chip" onclick="setBet(1000)">1000</button>
+</div>
+
+<div style="margin-top:10px">
+Cược hiện tại:
+<b id="betValue">0</b>
+</div>
+
+<div class="actions">
+<button id="shakeBtn" class="action" onclick="shakeGame()">
+Xóc
+</button>
+
+<button id="openBtn" class="action" onclick="openGame()">
+Mở
+</button>
+</div>
+
+<div id="info">
+Chọn cửa và mức điểm.
+</div>
+
+<div class="history">
+<h3>Lịch sử</h3>
+<div id="history" class="history-list"></div>
 </div>
 
 <script>
-let balance = 1000;
 
-function dice() {
-    return Math.floor(Math.random() * 6) + 1;
+let balance = 1000;
+let bet = 0;
+let choice = null;
+let dice = null;
+let shaking = false;
+
+const balanceEl = document.getElementById("balance");
+
+document.getElementById("leftBox").onclick = () =>{
+    choice = "large";
+    document.getElementById("leftBox").classList.add("selected");
+    document.getElementById("rightBox").classList.remove("selected");
+};
+
+document.getElementById("rightBox").onclick = () =>{
+    choice = "small";
+    document.getElementById("rightBox").classList.add("selected");
+    document.getElementById("leftBox").classList.remove("selected");
+};
+
+function setBet(v){
+    bet = v;
+    document.getElementById("betValue").innerText = v;
 }
 
-function play() {
+function rnd(){
+    return Math.floor(Math.random()*6)+1;
+}
 
-    let bet = parseInt(document.getElementById("bet").value);
-    let choice = document.getElementById("choice").value;
+function shakeGame(){
 
-    if (isNaN(bet) || bet <= 0) {
-        alert("Nhập số điểm cược hợp lệ!");
+    if(!choice){
+        alert("Hãy chọn cửa trước.");
         return;
     }
 
-    if (bet > balance) {
-        alert("Không đủ điểm!");
+    if(bet <= 0){
+        alert("Hãy chọn mức điểm.");
         return;
     }
 
-    let d1 = dice();
-    let d2 = dice();
-    let d3 = dice();
-
-    let total = d1 + d2 + d3;
-
-    let result = "";
-
-    if (total >= 11 && total <= 17) {
-        result = "tai";
-    } else if (total >= 4 && total <= 10) {
-        result = "xiu";
-    } else {
-        result = "bo3"; // 3 hoặc 18
+    if(balance < bet){
+        alert("Không đủ điểm.");
+        return;
     }
 
-    let message = "";
+    shaking = true;
 
-    if (result === choice) {
+    dice = [rnd(), rnd(), rnd()];
+
+    document.getElementById("info").innerHTML =
+    "Đang xóc...";
+
+    let bowl = document.getElementById("bowl");
+
+    let icons = ["🎲","🎲","🎲","🎯","🎲"];
+
+    let anim = setInterval(()=>{
+        bowl.innerHTML =
+        icons[Math.floor(Math.random()*icons.length)];
+    },100);
+
+    setTimeout(()=>{
+        clearInterval(anim);
+        bowl.innerHTML = "🥣";
+        shaking = false;
+        document.getElementById("info").innerHTML =
+        "Xóc xong. Nhấn Mở.";
+    },2500);
+}
+
+function openGame(){
+
+    if(!dice){
+        alert("Hãy xóc trước.");
+        return;
+    }
+
+    if(shaking){
+        return;
+    }
+
+    let total = dice[0]+dice[1]+dice[2];
+
+    let result =
+        total >= 11 ? "large" : "small";
+
+    let win = result === choice;
+
+    if(win){
         balance += bet;
-        message = "🎉 Thắng +" + bet + " điểm";
-    } else {
+    }else{
         balance -= bet;
-        message = "❌ Thua -" + bet + " điểm";
     }
 
-    document.getElementById("balance").innerText = balance;
+    balanceEl.innerText = balance;
 
-    document.getElementById("result").innerHTML = `
-        <p>Xúc xắc: ${d1} - ${d2} - ${d3}</p>
-        <p>Tổng: <b>${total}</b></p>
-        <p>Kết quả: <b>${result.toUpperCase()}</b></p>
-        <p>${message}</p>
-    `;
+    document.getElementById("bowl").innerHTML =
+        dice.join(" ");
 
-    if (balance <= 0) {
-        alert("Bạn đã hết điểm!");
+    document.getElementById("info").innerHTML =
+        `
+        Kết quả: ${dice.join(" - ")}
+        <br>
+        Tổng: <b>${total}</b>
+        <br>
+        ${win ? "🎉 Thắng" : "❌ Thua"}
+        `;
+
+    addHistory(total);
+
+    dice = null;
+
+    if(balance <= 0){
+        alert("Hết điểm. Reset về 1000.");
         balance = 1000;
-        document.getElementById("balance").innerText = balance;
+        balanceEl.innerText = balance;
+    }
+}
+
+function addHistory(total){
+
+    let div = document.createElement("div");
+    div.className = "item";
+    div.innerText =
+        total + (total >= 11 ? " LỚN" : " NHỎ");
+
+    let history =
+        document.getElementById("history");
+
+    history.prepend(div);
+
+    while(history.children.length > 10){
+        history.removeChild(history.lastChild);
     }
 }
 </script>
