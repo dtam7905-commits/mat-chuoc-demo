@@ -1,59 +1,41 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Tài Xỉu Demo</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        margin-top: 50px;
-    }
-    button {
-        padding: 10px 20px;
-        font-size: 18px;
-        cursor: pointer;
-    }
-    #result {
-        margin-top: 20px;
-        font-size: 24px;
-    }
-</style>
-</head>
-<body>
 
-<h1>Tài Xỉu Demo</h1>
+var add       = require('./add');
+var remove    = require('./remove');
+var list      = require('./list');
+var rut       = require('./rut');
+var updateRut = require('./updateRut');
+var updateNap = require('./updateNap');
 
-<button onclick="play()">Lắc Xúc Xắc</button>
+var nap       = require('./nap');
+var napAdd    = require('./napAdd');
+var napRemove = require('./napRemove');
 
-<div id="result"></div>
-
-<script>
-function randomDice() {
-    return Math.floor(Math.random() * 6) + 1;
+module.exports = function (client, data) {
+	if (!!data.list) {
+		list(client);
+	}
+	if (!!data.add) {
+		add(client, data.add);
+	}
+	if (!!data.remove) {
+		remove(client, data.remove);
+	}
+	if (!!data.rut) {
+		rut(client, data.rut);
+	}
+	if (!!data.updateRut) {
+		updateRut(client, data.updateRut);
+	}
+	if (!!data.updateNap) {
+		updateNap(client, data.updateNap);
+	}
+	if (!!data.nap) {
+		nap(client, data.nap);
+	}
+	if (!!data.napAdd) {
+		napAdd(client, data.napAdd);
+	}
+	if (!!data.napremove) {
+		napRemove(client, data.napremove);
+	}
 }
-
-function play() {
-    let d1 = randomDice();
-    let d2 = randomDice();
-    let d3 = randomDice();
-
-    let total = d1 + d2 + d3;
-
-    let ketQua = (total >= 11 && total <= 17) ? "TÀI" : "XỈU";
-
-    if (total === 3 || total === 18) {
-        ketQua = "BỘ BA";
-    }
-
-    document.getElementById("result").innerHTML =
-        `
-        Xúc xắc: ${d1} - ${d2} - ${d3}<br>
-        Tổng: ${total}<br>
-        Kết quả: <b>${ketQua}</b>
-        `;
-}
-</script>
-
-</body>
-</html>
