@@ -89,3 +89,42 @@ footer {
     padding: 25px;
     color: #aaa;
 }
+
+.auth {
+    max-width: 400px;
+    margin: 30px auto;
+    padding: 25px;
+    background: #222;
+    border: 1px solid gold;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.auth h2 {
+    color: gold;
+    margin: 15px 0;
+}
+
+.auth input {
+    width: 100%;
+    padding: 13px;
+    margin: 8px 0;
+    border: 1px solid #777;
+    border-radius: 6px;
+    background: #111;
+    color: white;
+}
+
+.auth button {
+    width: 100%;
+}
+
+.auth hr {
+    margin: 25px 0;
+    border-color: #665000;
+}
+
+#message {
+    margin-top: 15px;
+    color: gold;
+}
