@@ -9,6 +9,37 @@
 </head>
 <body>
 
+<main>
+    <section class="auth">
+        <h2>ĐĂNG NHẬP TÀI KHOẢN</h2>
+
+        <input type="text" id="loginUser"
+               placeholder="Tên đăng nhập">
+
+        <input type="password" id="loginPass"
+               placeholder="Mật khẩu">
+
+        <button onclick="login()">Đăng nhập</button>
+
+        <hr>
+
+        <h2>ĐĂNG KÝ TÀI KHOẢN</h2>
+
+        <input type="text" id="registerUser"
+               placeholder="Tên đăng nhập mới">
+
+        <input type="password" id="registerPass"
+               placeholder="Mật khẩu mới">
+
+        <button onclick="register()">Đăng ký</button>
+
+        <p id="message"></p>
+        <p id="welcome"></p>
+
+        <button onclick="logout()">Đăng xuất</button>
+    </section>
+</main>
+
     <header>
         <h1>👑 GOLDEN PLAY</h1>
         <nav>
@@ -23,27 +54,6 @@
         <p>Sảnh trò chơi giải trí với điểm ảo</p>
         <button onclick="showMessage()">Bắt đầu chơi</button>
     </section>
-
-    <main>
-        <h2>🎮 DANH SÁCH TRÒ CHƠI</h2>
-
-        <div class="games">
-            <div class="game">
-                <h3>🎰 Slot Game</h3>
-                <button onclick="playGame('Slot Game')">Chơi ngay</button>
-            </div>
-
-            <div class="game">
-                <h3>🃏 Bài giải trí</h3>
-                <button onclick="playGame('Bài giải trí')">Chơi ngay</button>
-            </div>
-
-            <div class="game">
-                <h3>🎲 Xúc xắc</h3>
-                <button onclick="playGame('Xúc xắc')">Chơi ngay</button>
-            </div>
-        </div>
-    </main>
 
     <footer>
         © 2026 GOLDEN PLAY
