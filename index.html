@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Một Ngày Mới — Phố Việt</title>
+<style>
+:root{--ink:#253044;--paper:#fff8e9;--green:#26845d;--orange:#ed8a36}
+*{box-sizing:border-box}body{margin:0;background:#e8eee8;color:var(--ink);font:15px system-ui,Segoe UI,sans-serif}
+header{background:#243b35;color:#fff;padding:12px 18px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+header b{font-size:20px}button,input{font:inherit;border:1px solid #c9d1c9;border-radius:10px;padding:9px 12px}
+button{background:#fff;cursor:pointer}button.primary{background:var(--green);color:white;border:0}button:disabled{opacity:.45;cursor:not-allowed}
+main{max-width:1200px;margin:14px auto;padding:0 12px;display:grid;grid-template-columns:minmax(0,2fr) minmax(290px,1fr);gap:14px}
+.panel{background:white;border:1px solid #dce3dc;border-radius:16px;padding:13px;box-shadow:0 3px 12px #1b392010}
+#city{width:100%;height:auto;display:block;background:#b9d7a3;border-radius:12px;touch-action:manipulation}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}.stat{background:#f2f6ef;padding:7px 10px;border-radius:10px;font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.tabs button{font-size:13px}
+#feed{height:125px;overflow:auto;background:#f7f8f4;padding:9px;border-radius:10px;font-size:13px;line-height:1.5}
+#place{min-height:125px;background:#fff8e9;border-radius:12px;padding:10px}
+.small{font-size:12px;color:#66736a}.row{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #edf0ea}
+.tag{background:#edf5ed;border-radius:7px;padding:3px 7px;font-size:12px}
+#auth{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+@media(max-width:800px){main{grid-template-columns:1fr}#city{min-height:320px}}
+</style></head>
+<body>
+<header><div><b>🌇 Một Ngày Mới — Phố Việt</b><div class="small" style="color:#d7e8dc">Thành phố hoạt hình · Cuộc sống mới bắt đầu</div></div>
+<div id="auth"><span class="small" style="color:#fff">🌐 Bản GitHub Pages · Chơi đơn</span></div></header>
+<main>
+<section class="panel">
+<div class="stats" id="stats"></div>
+<canvas id="city" width="900" height="590" aria-label="Bản đồ thành phố hoạt hình"></canvas>
+<div class="actions">
+<button onclick="move(0,-1)">⬆ Đi lên</button><button onclick="move(-1,0)">⬅ Sang trái</button><button onclick="move(1,0)">➡ Sang phải</button><button onclick="move(0,1)">⬇ Đi xuống</button>
+<button onclick="interact()">🔎 Tương tác gần đây</button><button onclick="nextHour()">⏩ Chờ 1 giờ</button>
+</div>
+<p class="small">Mẹo: bấm vào cửa hàng hoặc nhân vật trên bản đồ để tương tác. Dùng phím mũi tên để di chuyển.</p>
+</section>
+<aside class="panel">
+<div class="tabs"><button onclick="tab('place')">📍 Địa điểm</button><button onclick="tab('jobs')">💼 Công việc</button><button onclick="tab('home')">🏠 Nhà & xe</button><button onclick="tab('story')">📖 Câu chuyện</button><button onclick="tab('people')">🧑‍🤝‍🧑 Hàng xóm</button></div>
+<div id="place"></div>
+<h3>📜 Nhật ký khu phố</h3><div id="feed"></div>
+</aside></main>
+<script>
+const canvas=document.getElementById('city'),ctx=canvas.getContext('2d');
+const places=[
+{id:'market',name:'Chợ Hàng Me',x:100,y:85,w:145,h:88,kind:'Chợ',inside:['Sạp rau','Quầy trái cây','Gian hàng tạp hóa']},
+{id:'pho',name:'Phở Cô Lan',x:330,y:78,w:135,h:82,kind:'Quán ăn',inside:['Bếp phở','Bàn ăn']},
+{id:'repair',name:'Sửa xe Chú Bảy',x:580,y:80,w:160,h:86,kind:'Sửa xe',inside:['Khu sửa chữa','Kho phụ tùng']},
+{id:'coffee',name:'Cà phê Góc Phố',x:95,y:300,w:150,h:86,kind:'Cà phê',inside:['Quầy pha chế','Sân trước']},
+{id:'clinic',name:'Phòng khám An Tâm',x:335,y:300,w:145,h:86,kind:'Y tế',inside:['Phòng chờ','Phòng khám']},
+{id:'clothes',name:'Tiệm may Kim',x:590,y:300,w:145,h:86,kind:'Tiệm may',inside:['Quầy vải','Phòng thử đồ']},
+{id:'book',name:'Nhà sách Mực Tím',x:100,y:475,w:145,h:76,kind:'Nhà sách',inside:['Kệ sách','Quầy thanh toán']},
+{id:'gym',name:'Phòng tập Sức Sống',x:330,y:475,w:145,h:76,kind:'Thể thao',inside:['Khu tập luyện']},
+{id:'flower',name:'Hoa tươi Ban Mai',x:590,y:475,w:145,h:76,kind:'Cửa hàng',inside:['Khu cắm hoa']},
+{id:'bank',name:'Ngân hàng Phố',x:770,y:220,w:105,h:80,kind:'Dịch vụ',inside:['Quầy giao dịch']},
+{id:'salon',name:'Salon Tóc Mới',x:770,y:370,w:105,h:80,kind:'Dịch vụ',inside:['Ghế cắt tóc']},
+{id:'house',name:'Nhà trọ Bình Yên',x:770,y:80,w:105,h:85,kind:'Nhà trọ',inside:['Phòng trọ','Sân chung']}
+];
+const npcSeed=[
+['Lan','Chủ quán phở',280,210,7,20],['Bảy','Thợ sửa xe',520,215,8,18],['Hạnh','Bán hoa',700,420,6,19],['Minh','Sinh viên',250,420,8,22],['Tú','Bảo vệ',500,390,6,22],['Bác Năm','Hàng xóm',830,510,5,21],['Vy','Nhân viên cà phê',280,350,7,17],['Nam','Tài xế xe ôm',510,520,5,23]
+];
+let state={name:'Bạn',money:500,energy:80,health:100,rep:0,hour:7,day:1,x:450,y:260,home:false,vehicle:false,shop:false,jobDone:0,story:0,memories:{},friends:[],inside:null,tab:'place',weather:'Nắng',events:[]};
+let npcs=npcSeed.map((a,i)=>({id:i,name:a[0],job:a[1],x:a[2],y:a[3],start:a[4],end:a[5]}));
+function log(s){let f=document.getElementById('feed');f.innerHTML='• '+s+'<br>'+f.innerHTML}
+function stats(){document.getElementById('stats').innerHTML=[`📅 Ngày ${state.day} · ${String(state.hour).padStart(2,'0')}:00`,`💵 ${state.money.toLocaleString('vi-VN')}đ`,`⚡ ${state.energy}%`,`❤️ ${state.health}%`,`⭐ Uy tín ${state.rep}`,`🌦 ${state.weather}`].map(x=>`<span class="stat">${x}</span>`).join('')}
+function drawPerson(x,y,name,player=false){ctx.save();ctx.translate(x,y);ctx.fillStyle='#263b33';ctx.beginPath();ctx.ellipse(0,19,12,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=player?'#f0a33a':['#5b9bd5','#df7b83','#68a77b','#9b82c5'][Math.abs(name.length)%4];ctx.fillRect(-8,0,16,18);ctx.fillStyle='#f4c9a5';ctx.beginPath();ctx.arc(0,-8,9,0,Math.PI*2);ctx.fill();ctx.fillStyle='#33251e';ctx.beginPath();ctx.arc(0,-12,9,Math.PI,Math.PI*2);ctx.fill();ctx.fillStyle='#263044';ctx.fillRect(-4,-8,2,2);ctx.fillRect(3,-8,2,2);ctx.fillStyle='#fff';ctx.font='12px sans-serif';ctx.textAlign='center';ctx.fillText(name,0,34);ctx.restore()}
+function draw(){ctx.clearRect(0,0,900,590);ctx.fillStyle='#a9ce91';ctx.fillRect(0,0,900,590);
+ctx.fillStyle='#747e83';ctx.fillRect(0,185,900,75);ctx.fillRect(260,0,60,590);ctx.fillRect(500,0,55,590);ctx.fillRect(0,405,900,55);
+ctx.strokeStyle='#f8e6a8';ctx.setLineDash([18,16]);ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,222);ctx.lineTo(900,222);ctx.moveTo(290,0);ctx.lineTo(290,590);ctx.moveTo(528,0);ctx.lineTo(528,590);ctx.stroke();ctx.setLineDash([]);
+places.forEach(p=>{ctx.fillStyle='#e8d4ac';ctx.fillRect(p.x,p.y,p.w,p.h);ctx.fillStyle='#c45f4b';ctx.fillRect(p.x-5,p.y-9,p.w+10,17);ctx.fillStyle='#fff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillText(p.name,p.x+p.w/2,p.y+42);ctx.fillStyle='#83b9c4';ctx.fillRect(p.x+12,p.y+52,22,22)});
+for(let i=0;i<7;i++){let x=(i*139+state.hour*19)%900;ctx.fillStyle=['#e64e43','#e7b83c','#3776ad'][i%3];ctx.fillRect(x,197+(i%2)*29,29,12);ctx.fillStyle='#222';ctx.beginPath();ctx.arc(x+6,212+(i%2)*29,5,0,7);ctx.arc(x+23,212+(i%2)*29,5,0,7);ctx.fill()}
+npcs.forEach(n=>{let active=state.hour>=n.start&&state.hour<n.end;let dx=active?Math.sin((state.hour+n.id)*.7)*12:0;drawPerson(n.x+dx,n.y,n.name)});
+drawPerson(state.x,state.y,state.name,true);
+if(state.weather==='Mưa'){ctx.fillStyle='#a9b9c5aa';ctx.fillRect(0,0,900,590);ctx.strokeStyle='#e8f6ff';for(let i=0;i<90;i++){let x=(i*83+state.hour*37)%900,y=(i*47+state.hour*29)%590;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-5,y+13);ctx.stroke()}}
+}
+function closest(){let all=places.map(p=>({...p,d:Math.hypot(state.x-(p.x+p.w/2),state.y-(p.y+p.h/2))}));let n=npcs.map(p=>({...p,d:Math.hypot(state.x-p.x,state.y-p.y),person:true}));return [...all,...n].sort((a,b)=>a.d-b.d)[0]}
+function tab(t){state.tab=t;renderPanel()}
+function renderPanel(){let el=document.getElementById('place'),t=state.tab;
+if(t==='jobs'){el.innerHTML='<h3>💼 Việc làm trong khu phố</h3>'+[['Phụ bếp quán phở',180,7,11],['Giao hàng bằng xe máy',250,9,12],['Dọn dẹp cửa hàng',150,6,8],['Sửa xe học việc',220,10,13],['Phụ bán hoa',170,6,9]].map((j,i)=>`<div class="row"><span>${j[0]}<br><small>${j[2]} giờ · tốn ${j[3]} năng lượng</small></span><button onclick="work(${i})">Nhận ${j[1]}đ</button></div>`).join('')}
+else if(t==='home'){el.innerHTML=`<h3>🏠 Chỗ ở & phương tiện</h3><p>${state.home?'Bạn đang thuê phòng trọ Bình Yên.':'Bạn chưa có chỗ ở ổn định.'}</p><button onclick="rent()">Thuê phòng (300đ/ngày)</button><p>${state.vehicle?'Bạn có một xe máy cũ.':'Bạn chưa có xe máy.'}</p><button onclick="buyVehicle()">Mua xe máy cũ (1.800đ)</button><p>${state.shop?'Bạn đã mở cửa hàng nhỏ.':'Bạn chưa kinh doanh riêng.'}</p><button onclick="openShop()">Mở cửa hàng (3.000đ)</button>`}
+else if(t==='story'){el.innerHTML=`<h3>📖 Hành trình làm lại cuộc đời</h3><p>${['Ngày đầu ở Phố Hàng Me: tìm một công việc tử tế và làm quen hàng xóm.','Cơ hội thứ hai: giúp cô Lan chuẩn bị bữa ăn miễn phí cho khu phố.','Gây dựng niềm tin: hoàn thành 3 công việc và kết bạn với 2 người.','Ước mơ riêng: dành dụm tiền để mở một cửa hàng nhỏ.'][Math.min(state.story,3)]}</p><button onclick="storyTask()">Làm nhiệm vụ câu chuyện</button><p class="small">Tiến độ nhiệm vụ: ${state.jobDone} công việc · ${state.friends.length} người quen.</p>`}
+else if(t==='people'){el.innerHTML='<h3>🧑‍🤝‍🧑 Hàng xóm & ký ức</h3>'+npcs.map(n=>`<div class="row"><span><b>${n.name}</b> · ${n.job}<br><small>${state.memories[n.id]||'Chưa có kỷ niệm'}</small></span><span class="tag">${state.hour>=n.start&&state.hour<n.end?'Đang hoạt động':'Đang nghỉ'}</span></div>`).join('')}
+else {let c=state.inside?places.find(p=>p.id===state.inside):null;el.innerHTML=c?`<h3>🏬 ${c.name}</h3><p>Bạn đang ở bên trong. Chọn một khu vực để khám phá:</p>${c.inside.map(x=>`<div class="row">${x}<span class="tag">Có thể khám phá</span></div>`).join('')}<button onclick="state.inside=null;renderPanel();log('Bạn bước ra ngoài.')">Ra ngoài</button>`:`<h3>📍 ${closest().name}</h3><p>${closest().person?'Một người hàng xóm đang ở gần bạn.':'Một địa điểm trong khu phố.'}</p><button class="primary" onclick="interact()">Tương tác</button><p class="small">12 địa điểm có thể bước vào. Hãy ghé thăm và khám phá từng nơi.</p>`}
+}
+function interact(){let o=closest();if(o.d>95){log('Hãy di chuyển đến gần một cửa hàng hoặc người dân.');return}
+if(o.person){let n=npcs.find(x=>x.id===o.id);let msg=state.hour<n.start||state.hour>=n.end?`${n.name} đang nghỉ ngơi, hẹn gặp vào giờ hoạt động nhé.`:`${n.name}: “Chào bạn! Cố gắng từng ngày, rồi mọi chuyện sẽ tốt hơn.”`;state.memories[n.id]=`Đã trò chuyện ngày ${state.day}`;if(!state.friends.includes(n.id))state.friends.push(n.id);state.rep++;log(msg);tab('people')}
+else{state.inside=o.id;log('Bạn bước vào '+o.name+'.');tab('place')}
+}
+function move(dx,dy){state.x=Math.max(20,Math.min(880,state.x+dx*28));state.y=Math.max(20,Math.min(570,state.y+dy*28));state.energy=Math.max(0,state.energy-1);draw();stats()}
+function nextHour(){state.hour++;if(state.hour>=24){state.hour=6;state.day++;state.energy=100;state.health=Math.min(100,state.health+10);state.weather=Math.random()>.5?'Nắng':'Mưa';log('Một ngày mới bắt đầu. Bạn được hồi phục năng lượng.')}if(state.hour===12)log('Đến giờ trưa, nhớ ăn uống và nghỉ ngơi.');draw();stats();renderPanel();sync()}
+function work(i){let jobs=[[180,7,11,'phụ bếp'],[250,9,12,'giao hàng'],[150,6,8,'dọn dẹp'],[220,10,13,'học sửa xe'],[170,6,9,'bán hoa']];let j=jobs[i];if(state.hour<j[1]||state.hour>=j[2]){log('Ca làm chưa đến giờ. Hãy kiểm tra lịch làm.');return}if(state.energy<25){log('Bạn quá mệt, hãy ăn hoặc nghỉ ngơi.');return}state.money+=j[0];state.energy-=25;state.jobDone++;state.rep++;log(`Bạn làm ${j[3]} chăm chỉ và nhận ${j[0]}đ.`);stats();renderPanel();sync()}
+function rent(){if(state.money<300){log('Bạn chưa đủ tiền thuê phòng.');return}state.money-=300;state.home=true;log('Bạn thuê được một căn phòng nhỏ ở Bình Yên.');stats();renderPanel();sync()}
+function buyVehicle(){if(state.money<1800){log('Chưa đủ tiền mua xe máy cũ.');return}state.money-=1800;state.vehicle=true;log('Bạn mua được chiếc xe máy cũ. Đi lại thuận tiện hơn!');stats();renderPanel();sync()}
+function openShop(){if(state.money<3000){log('Cần 3.000đ để mở cửa hàng.');return}state.money-=3000;state.shop=true;log('Bạn khai trương cửa hàng nhỏ của riêng mình!');stats();renderPanel();sync()}
+function storyTask(){if(state.story===0&&state.jobDone>=1){state.story++;log('Nhiệm vụ hoàn thành: bạn đã có công việc đầu tiên.');}else if(state.story===1&&state.friends.length>=1){state.story++;log('Cô Lan ghi nhận sự chân thành của bạn.');}else if(state.story===2&&state.jobDone>=3&&state.friends.length>=2){state.story++;log('Bạn đã tạo dựng được niềm tin trong khu phố.');}else if(state.story===3&&state.shop){log('Bạn đã biến ước mơ kinh doanh thành hiện thực!');}else log('Hãy hoàn thành điều kiện nhiệm vụ trước nhé.');renderPanel();sync()}
+function account(action){alert('GitHub Pages chỉ chạy bản chơi đơn. Để dùng tài khoản và multiplayer, cần máy chủ Node.js riêng.')}
+function sync(){}
+function poll(){let token=localStorage.getItem('token');if(!token)return;fetch('/api/players',{headers:{Authorization:'Bearer '+token}}).then(r=>r.ok?r.json():[]).then(players=>{window.otherPlayers=players;draw()}).catch(()=>{})}
+window.addEventListener('keydown',e=>{if(e.key==='ArrowUp')move(0,-1);if(e.key==='ArrowDown')move(0,1);if(e.key==='ArrowLeft')move(-1,0);if(e.key==='ArrowRight')move(1,0)});
+canvas.addEventListener('click',e=>{let r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*900/r.width,y=(e.clientY-r.top)*590/r.height;let p=places.find(p=>x>=p.x-12&&x<=p.x+p.w+12&&y>=p.y-15&&y<=p.y+p.h+15);if(p){state.x=p.x+p.w/2;state.y=p.y+p.h/2+40;state.inside=p.id;tab('place');log('Bạn đến '+p.name+'.')}else{let n=npcs.find(n=>Math.hypot(n.x-x,n.y-y)<30);if(n){state.x=n.x+20;state.y=n.y+20;interact()}else{state.x=x;state.y=y}}draw();stats()});
+let oldDraw=draw;draw=function(){oldDraw();(window.otherPlayers||[]).forEach(p=>{if(p.username!==state.name)drawPerson(p.x,p.y,p.username,false)})};
+stats();draw();renderPanel();log('Chào mừng bạn đến Phố Hàng Me. Hôm nay là ngày đầu tiên của hành trình mới.');setInterval(()=>{poll();},3000);
+</script></body></html>
